@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fret Companion</title>
+</head>
+<body>
+    <header>
+        <div style="background-color: darkred; height:100%;color:white;padding:5px;word-spacing:25px;margin-bottom:5%">
+            <span>Home</span>
+            <span>Songs</span>
+            <span>Profile</span>
+        </div>
+    </header>
+    <main>
+        <div class="search">
+            <form action="/" method="POST">
+                <label for="username">Username
+                    <input type="text" name="username" required>
+                </label>
+                <button type="submit" value="Search">Search</button>
+                {% if not params.user_found %}
+                <p>User not found.</p><br>
+                {% endif %}
+            </form>
+        </div>
+        <div class="songs">
+            <p>Results</p>
+
+            {% if not params.recent_activity and params.user_found %}
+            <p>No recent activity from this user.</p>
+            {% endif %}
+
+            <ul id="song_list">
+            {% for song in params.songs %}
+                <li>{{ song["track_metadata"]["artist_name"] }} - {{ song["track_metadata"]["track_name"] }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </main>
+</body>
+</html>
