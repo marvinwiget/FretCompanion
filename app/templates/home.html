@@ -7,7 +7,7 @@
 </head>
 <body>
     <header>
-        <div style="background-color: darkred; height:100%;color:white;padding:5px;word-spacing:25px;margin-bottom:5%">
+        <div style="background-color: rgb(161, 32, 32); height:100%;color:white;padding:5px;word-spacing:25px;margin-bottom:5%">
             <span>Home</span>
             <span>Songs</span>
             <span>Profile</span>
@@ -16,12 +16,28 @@
     <main>
         <div class="search">
             <form action="/" method="POST">
-                <label for="username">Username
-                    <input type="text" name="username" required>
-                </label>
+                <input type="radio" name="result_type" value="last_listened_songs" checked>
+                <label for="result_type">Last listened tracks</label>
+                <input type="radio" name="result_type" value="top_songs">
+                <label for="result_type">Top tracks</label><br><br>
+
+                <label for="username">Username*</label>
+                <input type="text" name="username" required>
+                <br><br>
+                <label for="count">Amount of songs</label>
+                <input type="number" name="count" value="25" min="1" max="50" required>
+
+                <label for="time_range">Time range</label>
+                <select name="time_range">
+                    <option value="week">1 Week</option>
+                    <option value="month">1 Month</option>
+                    <option value="year">1 Year</option>
+                    <option value="all_time">All-time</option>
+                </select><br><br>
+
                 <button type="submit" value="Search">Search</button>
                 {% if not params.user_found %}
-                <p>User not found.</p><br>
+                <p style="color:red">User not found.</p><br>
                 {% endif %}
             </form>
         </div>
@@ -33,8 +49,15 @@
             {% endif %}
 
             <ul id="song_list">
-            {% for song in params.songs %}
-                <li>{{ song["track_metadata"]["artist_name"] }} - {{ song["track_metadata"]["track_name"] }}</li>
+            {% for song in params.eva_songs %}
+                {% if params.result_type == "last_listened_songs" %}
+                <li>{{ song["artist_name"] }} - {{ song["song_name"] }}
+
+                    {% for key, val in song.analysis.model_dump().items() %}
+                    <li>{{ key }} - {{ val }} </li><br>
+                    {% endfor %}
+                </li>
+                {% endif %}
             {% endfor %}
             </ul>
         </div>
