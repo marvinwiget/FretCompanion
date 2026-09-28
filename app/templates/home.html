@@ -25,7 +25,7 @@
                 <input type="text" name="username" required>
                 <br><br>
                 <label for="count">Amount of songs</label>
-                <input type="number" name="count" value="25" min="1" max="50" required>
+                <input type="number" name="count" value="2" min="1" max="25" required>
 
                 <label for="time_range">Time range</label>
                 <select name="time_range">
@@ -50,14 +50,12 @@
 
             <ul id="song_list">
             {% for song in params.eva_songs %}
-                {% if params.result_type == "last_listened_songs" %}
                 <li>{{ song["artist_name"] }} - {{ song["song_name"] }}
 
                     {% for key, val in song.analysis.model_dump().items() %}
                     <li>{{ key }} - {{ val }} </li><br>
                     {% endfor %}
                 </li>
-                {% endif %}
             {% endfor %}
             </ul>
         </div>

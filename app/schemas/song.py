@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+# add fields
+
 class Technique(BaseModel):
     name: str
     difficulty: int
@@ -16,9 +18,13 @@ class SongAnalysis(BaseModel):
     explanation: str
     confidence: float
 
+class SongAnalysisBATCH(BaseModel):
+    songs: list[SongAnalysis]
+
 class Song(BaseModel):
     song_name: str
     artist_name: str
     analysis: SongAnalysis | None = None
+
 
 
