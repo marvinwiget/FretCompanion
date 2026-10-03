@@ -14,11 +14,12 @@
         </div>
     </header>
     <main>
-        <div class="search">
+        <fieldset>
+            <legend>Enter your data</legend>
             <form action="/" method="POST">
                 <input type="radio" name="result_type" value="last_listened_songs" checked>
                 <label for="result_type">Last listened tracks</label>
-                <input type="radio" name="result_type" value="top_songs">
+                <input id="top_tracks_input" type="radio" name="result_type" value="top_songs">
                 <label for="result_type">Top tracks</label><br><br>
 
                 <label for="username">Username*</label>
@@ -26,7 +27,8 @@
                 <br><br>
                 <label for="count">Amount of songs</label>
                 <input type="number" name="count" value="2" min="1" max="25" required>
-
+                
+                <div id="time_range">
                 <label for="time_range">Time range</label>
                 <select name="time_range">
                     <option value="week">1 Week</option>
@@ -34,31 +36,60 @@
                     <option value="year">1 Year</option>
                     <option value="all_time">All-time</option>
                 </select><br><br>
+                </div>
 
                 <button type="submit" value="Search">Search</button>
                 {% if not params.user_found %}
                 <p style="color:red">User not found.</p><br>
+                {% elif params.fetching_songs %}
+                <p>Searching for your songs...</p>
+                {% elif params.analyzing_songs %}
+                <p>Analyzing songs...</p>
                 {% endif %}
             </form>
-        </div>
-        <div class="songs">
-            <p>Results</p>
+        </fieldset>
 
-            {% if not params.recent_activity and params.user_found %}
-            <p>No recent activity from this user.</p>
-            {% endif %}
+        {% if not params.recent_activity and params.user_found %}
+        <h2>No recent activity from this user.</h2>
+        {% elif params.recent_activity and params.user_found and params.eva_songs %}
+        <h2>Your results:</h2>
+        {% endif %}
 
-            <ul id="song_list">
-            {% for song in params.eva_songs %}
-                <li>{{ song["artist_name"] }} - {{ song["song_name"] }}
-
-                    {% for key, val in song.analysis.model_dump().items() %}
-                    <li>{{ key }} - {{ val }} </li><br>
-                    {% endfor %}
-                </li>
-            {% endfor %}
+        {% for song in params.eva_songs %}
+        <fieldset>
+        <legend>Track {{ loop.index }}</legend>
+            <span style="font-weight: bold;">{{ song.song_name }} | {{ song.match }}% Match for you</span><br>
+            <span>{{ song.artist_name }}</span><br>
+            <ul>
+                <li>Difficulty: {{ song.analysis.overall_difficulty }}</li>
+                <li>Chords: {{ song.analysis.required_chords }}</li>
+                <li>Techniques: {{ song.analysis.techniques }}</li>
+                <li>Tuning: {{ song.analysis.tuning }}</li>
+                <li>Summary: {{ song.analysis.explanation }}</li>
             </ul>
-        </div>
+        </fieldset>
+        {% endfor %}
     </main>
 </body>
+<script>
+    const timeRange = document.getElementById("time_range");
+    const resultTypeRadios = document.querySelectorAll(
+        'input[name="result_type"]'
+    );
+
+    function updateTimeRangeVisibility() {
+        const selectedResultType = document.querySelector(
+        'input[name="result_type"]:checked'
+        );
+
+        timeRange.style.visibility =
+        selectedResultType.value === "top_songs" ? "visible" : "hidden";
+    }
+
+    resultTypeRadios.forEach((radio) => {
+        radio.addEventListener("change", updateTimeRangeVisibility);
+    });
+
+    updateTimeRangeVisibility();
+</script>
 </html>
