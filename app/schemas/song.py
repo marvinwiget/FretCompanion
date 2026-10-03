@@ -8,13 +8,14 @@ class Technique(BaseModel):
 
 class SongAnalysis(BaseModel):
     tuning: str
-    overall_difficulty: int
+    overall_difficulty: str # "Beginner" | "Intermediate" | "Advanced"
+    solo_style: str # "Rhythm" | "Lead" | "Balanced"
     rhythm_difficulty: int
     lead_difficulty: int
     solo_difficulty: int
     tempo_difficulty: int
     required_chords: list[str]
-    techniques: list[Technique]
+    techniques: list[str]
     explanation: str
     confidence: float
 
@@ -24,6 +25,7 @@ class SongAnalysisBATCH(BaseModel):
 class Song(BaseModel):
     song_name: str
     artist_name: str
+    match: int | None = None # 0-100
     analysis: SongAnalysis | None = None
 
 
