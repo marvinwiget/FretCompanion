@@ -1,5 +1,5 @@
 import requests
-import pprint
+import time
 
 ROOT = "https://api.listenbrainz.org"
 
@@ -9,6 +9,9 @@ AUTH_HEADER = {
 }
 
 def get_latest_songs(username: str, min_ts=None, max_ts=None, count: int = 20):
+    start_time = time.time()
+    print(f"{time.strftime("%H:%M:%S", time.gmtime())}: start fetching songs from listenbrainz")
+
     response = requests.get(
         url="{0}/1/user/{1}/listens".format(ROOT, username),
         params={
@@ -17,15 +20,18 @@ def get_latest_songs(username: str, min_ts=None, max_ts=None, count: int = 20):
             "count": count,
         },
         headers=AUTH_HEADER,
-        timeout=15
+        timeout=20
     )
 
     #print(response.status_code)
 
-    if response.status_code == 402: # user not found
+    if response.status_code == 404: # user not found
         raise NameError
     
     response.raise_for_status()
+
+    end_time = time.time()
+    print(f"{time.strftime("%H:%M:%S", time.gmtime())}: finished fetching songs in {end_time - start_time:.2f} seconds")
 
     return response.json()['payload']['listens']
 
