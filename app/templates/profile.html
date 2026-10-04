@@ -5,12 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 </head>
-<body>
-    <header>
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 6%;
+        background-color: #18221f;
+        border-bottom: 3px solid #b7653b;
+    }
+
+    .navbar {
+        display: flex;
+        gap: 12px;
+    }
+
+    .navbar a {
+        color: #f8f5ef;
+        text-decoration: none;
+        padding: 9px 15px;
+        border-radius: 7px;
+        font: 500 16px/1.2 system-ui, sans-serif;
+        transition: background-color 160ms ease, color 160ms ease;
+    }
+
+    .navbar a:hover,
+    .navbar a:focus-visible {
+        color: white;
+        background-color: #a64f2b;
+        outline: none;
+    }
+
+    @media (max-width: 480px) {
+        .header {
+            padding-inline: 1rem;
+        }
+
+        .navbar {
+            gap: 2px;
+        }
+
+        .navbar a {
+            padding: 9px;
+            font-size: 14px;
+        }
+    }
+</style>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <a href="./">Home</a>
+            <a href="./guitar-profile">Guitar Profile</a>
+        </nav>
     </header>
     <main>
-        
+        <form action="/guitar-profile" method="post">
+
+            <fieldset>
+              <legend>Guitar Experience</legend>
+              <label for="experience">Your guitar level:</label>
+              <input type="radio" name="experience" value="Beginner"><label>Beginner</label>
+              <input type="radio" name="experience" value="Intermediate"><label>Intermediate</label>
+              <input type="radio" name="experience" value="Advanced"><label>Advanced</label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Playing Preference</legend>
+              <label for="solo_type">Pick your preference:</label>
+              <input type="radio" name="solo_type" value="Rhythm"><label>Rhythm</label>
+              <input type="radio" name="solo_type" value="Lead"><label>Lead</label>
+              <input type="radio" name="solo_type" value="Balanced"><label>Balanced</label>
+              <input type="radio" name="solo_type" value="Indifferent"><label>Indifferent</label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Guitar Techniques</legend>
+              <label><input type="checkbox" name="technique" value="Fingerpicking">Fingerpicking</label>
+              <label><input type="checkbox" name="technique" value="Strumming">Strumming</label>
+              <label><input type="checkbox" name="technique" value="Hammer-on">Hammer-on</label>
+              <label><input type="checkbox" name="technique" value="Bending">Bending</label>
+            </fieldset>
+
+            {% for chord_type in params.chord_types %}
+            <fieldset>
+                <legend>{{ chord_type.label }}</legend>
+
+                {% for root in params.roots %}
+                {% set chord = root ~ chord_type.suffix %}
+
+                <label>
+                    <input
+                    type="checkbox"
+                    name="chords"
+                    value="{{ chord }}"
+                    class="chord-option"
+                    >
+                    {{ chord }}
+                </label>
+                {% endfor %}
+
+                <label>
+                <input type="checkbox" class="select-all">
+                Select all
+                </label>
+            </fieldset>
+            {% endfor %}
+
+            <fieldset>
+              <legend>Tuning Preference</legend>
+              <label for="tuning">Choose a tuning:</label>
+
+              <select name="tuning">
+                <option value="Indifferent">Indifferent</option>
+                <option value="Standard">Standard Tuning</option>
+              </select>
+            </fieldset>
+
+        <button type="submit">Save selected chords</button>
+        </form>
     </main>
 </body>
+
+<script>
+  document.querySelectorAll("fieldset").forEach((row) => {
+    const selectAll = row.querySelector(".select-all");
+    const chordOptions = row.querySelectorAll(".chord-option");
+
+    selectAll.addEventListener("change", () => {
+      chordOptions.forEach((chord) => {
+        chord.checked = selectAll.checked;
+      });
+    });
+
+    chordOptions.forEach((chord) => {
+      chord.addEventListener("change", () => {
+        selectAll.checked = [...chordOptions].every((option) => option.checked);
+      });
+    });
+  });
+</script>
+
 </html>
+

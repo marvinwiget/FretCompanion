@@ -65,8 +65,11 @@ def home():
             params["eva_songs"] = songs_batch
 
             try: 
-                evaluate_match(songs=params["eva_songs"], user=session["guitar_profile"])
-            except:
+                profile_data= session.get("guitar_profile")
+                profile = GuitarProfile.model_validate(profile_data)
+                evaluate_match(songs=params["eva_songs"], user=profile)
+            except Exception as e:
+                print(e)
                 evaluate_match(songs=params["eva_songs"], user=user)
 
             end_time = time.time()
@@ -90,8 +93,22 @@ def profile():
         "roots": get_roots(),
         "chord_types": get_chord_types()
     }
+    
     if request.method == "POST":
+        experience_level = request.form["experience"]
+        solo_type = request.form["solo_type"]
+        guitar_techniques = request.form.getlist("technique")
         selected_chords = request.form.getlist("chords")
+        tuning_preference = request.form["tuning"]
+
+        session["guitar_profile"] = GuitarProfile(
+            experience_level=experience_level,
+            solo_preference=solo_type,
+            techniques=guitar_techniques,
+            learned_chords=selected_chords,
+            in_training_chords=[],
+            tuning_preferences=tuning_preference
+        ).model_dump(mode="json")
 
 
     return render_template("profile.html", params=params)
