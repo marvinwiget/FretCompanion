@@ -5,13 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fret Companion</title>
 </head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 6%;
+        background-color: #18221f;
+        border-bottom: 3px solid #b7653b;
+    }
+
+    .navbar {
+        display: flex;
+        gap: 12px;
+    }
+
+    .navbar a {
+        color: #f8f5ef;
+        text-decoration: none;
+        padding: 9px 15px;
+        border-radius: 7px;
+        font: 500 16px/1.2 system-ui, sans-serif;
+        transition: background-color 160ms ease, color 160ms ease;
+    }
+
+    .navbar a:hover,
+    .navbar a:focus-visible {
+        color: white;
+        background-color: #a64f2b;
+        outline: none;
+    }
+
+    @media (max-width: 480px) {
+        .header {
+            padding-inline: 1rem;
+        }
+
+        .navbar {
+            gap: 2px;
+        }
+
+        .navbar a {
+            padding: 9px;
+            font-size: 14px;
+        }
+    }
+</style>
 <body>
-    <header>
-        <div style="background-color: rgb(161, 32, 32); height:100%;color:white;padding:5px;word-spacing:25px;margin-bottom:5%">
-            <span>Home</span>
-            <span>Songs</span>
-            <span>Profile</span>
-        </div>
+    <header class="header">
+        <nav class="navbar">
+            <a href="./">Home</a>
+            <a href="./guitar-profile">Guitar Profile</a>
+        </nav>
     </header>
     <main>
         <fieldset>
