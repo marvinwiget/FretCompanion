@@ -18,12 +18,14 @@ def evaluate_match(songs: list[Song], user: GuitarProfile):
         song.match = 100 - (
             20 * w_diff +
             20 * w_style + 
-            25 * w_chords +
-            15 * w_tech + 
+            40 * w_chords +
+            0 * w_tech + 
             20 * w_tuning
         )
         song.match += 20 * w_learn # if there are chords in song the user wants to learn, increase match
+        song.match = round(song.match) # match should be an int
         if song.match > 100: song.match = 100 # cap on 100% match, this case only possible with learning chords
+        
 
     return songs
 
