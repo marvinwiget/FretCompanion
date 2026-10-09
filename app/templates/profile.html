@@ -60,6 +60,7 @@
         <nav class="navbar">
             <a href="./">Home</a>
             <a href="./guitar-profile">Guitar Profile</a>
+            <a href="./search">Search</a>
         </nav>
     </header>
     <main>
@@ -68,7 +69,7 @@
             <fieldset>
               <legend>Guitar Experience</legend>
               <label for="experience">Your guitar level:</label>
-              <input type="radio" name="experience" value="Beginner"><label>Beginner</label>
+              <input type="radio" name="experience" value="Beginner" checked><label>Beginner</label>
               <input type="radio" name="experience" value="Intermediate"><label>Intermediate</label>
               <input type="radio" name="experience" value="Advanced"><label>Advanced</label>
             </fieldset>
@@ -79,7 +80,7 @@
               <input type="radio" name="solo_type" value="Rhythm"><label>Rhythm</label>
               <input type="radio" name="solo_type" value="Lead"><label>Lead</label>
               <input type="radio" name="solo_type" value="Balanced"><label>Balanced</label>
-              <input type="radio" name="solo_type" value="Indifferent"><label>Indifferent</label>
+              <input type="radio" name="solo_type" value="Indifferent" checked><label>Indifferent</label>
             </fieldset>
 
             <fieldset>
@@ -120,8 +121,8 @@
               <label for="tuning">Choose a tuning:</label>
 
               <select name="tuning">
+                <option value="Standard" >Standard Tuning</option>
                 <option value="Indifferent">Indifferent</option>
-                <option value="Standard">Standard Tuning</option>
               </select>
             </fieldset>
 
