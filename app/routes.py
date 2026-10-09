@@ -22,8 +22,12 @@ user = GuitarProfile(
     tuning_preferences="EADGBE"
 )
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/", methods=['GET'])
 def home():
+    return render_template("home.html")
+
+@app.route("/search", methods=['GET', 'POST'])
+def search():
     params = {
         "user_found": True,
         "recent_activity": True,
@@ -83,7 +87,7 @@ def home():
         #     print(e)
         #     params["recent_activity"] = False
 
-    return render_template("home.html", params=params)
+    return render_template("search.html", params=params)
 
 @app.route("/guitar-profile", methods=["GET", "POST"])
 def profile(): 
