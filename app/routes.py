@@ -2,6 +2,7 @@
 from flask import Flask, request, render_template, session
 import secrets
 import time
+import pprint
 
 from .api.listenbrainz_api import get_latest_songs, get_top_songs
 from .api.song_analysis import get_songs_analysis
@@ -9,6 +10,7 @@ from .schemas.song import Song
 from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
 from .helper.chords import get_roots, get_chord_types
+from .db.session import save_track, load_track, load_tracks
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
@@ -52,21 +54,27 @@ def search():
                 raw_songs = get_top_songs(username, count=count, time_range=time_range)
                 params["result_type"] = "top_songs"
 
-            if not raw_songs: params["recent_activity"] = False
+            if not raw_songs: params["recent_activity"] = False # no recent activity found for user
 
             for raw_song in raw_songs:
                 metadata = raw_song["track_metadata"] # wont work with top songs -> different json return
-
+                pprint.pprint(metadata)
                 songs_batch.append(Song(
+                    rec_mbid=metadata["mbid_mapping"]["recording_mbid"],
                     artist_name=metadata["artist_name"],
                     song_name=metadata["track_name"]
                 ))
+            needs_analysis = [s for s in songs_batch if load_track(s.rec_mbid) is None]
+            
+            if needs_analysis:
+                print("not everything in database")
+                analysed_batch = get_songs_analysis(needs_analysis)
 
-            analysed_batch = get_songs_analysis(songs_batch)
+                for song, analysis in zip(needs_analysis, analysed_batch):
+                    song.analysis = analysis
+                    save_track(song=song)
 
-            for song, analysis in zip(songs_batch, analysed_batch):
-                song.analysis = analysis
-            params["eva_songs"] = songs_batch
+            params["eva_songs"] = load_tracks([s.rec_mbid for s in songs_batch])
 
             try: 
                 profile_data= session.get("guitar_profile")
