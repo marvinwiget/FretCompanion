@@ -23,6 +23,7 @@ class SongAnalysisBATCH(BaseModel):
     songs: list[SongAnalysis]
 
 class Song(BaseModel):
+    rec_mbid: str
     song_name: str
     artist_name: str
     match: int | None = None # 0-100
