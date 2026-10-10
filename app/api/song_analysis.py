@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
 from google import genai
-load_dotenv()
-from app.schemas.song import Song, SongAnalysisBATCH
 import time
+load_dotenv()
+
+from app.schemas.song import Song, SongAnalysisBATCH
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
