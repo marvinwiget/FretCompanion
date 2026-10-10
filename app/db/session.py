@@ -16,13 +16,33 @@ class Base(DeclarativeBase):
 class Track(Base):
     __tablename__ = "tracks"
 
-    rec_mbid: Mapped[str] = mapped_column(String(36),
-                                    primary_key=True)
-    artist_name: Mapped[str] = mapped_column(String(255))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    rec_mbid: Mapped[str | None] = mapped_column(String(36), unique=True)
     track_name: Mapped[str] = mapped_column(String(255))
+    artist_name: Mapped[str] = mapped_column(String(255))
     analysis: Mapped[dict] = mapped_column(JSON)
 
 Base.metadata.create_all(engine)
+
+def get_track(session: Session, song: Song):
+    # check if mbid exists
+    if song.rec_mbid is not None:
+        existing_track = session.scalar(
+            select(Track).where(
+                Track.rec_mbid == song.rec_mbid
+            )
+        )
+        return existing_track
+
+    # check if track and artist name in db
+    else: 
+        existing_track = session.scalar(
+            select(Track).where(
+                Track.track_name == song.song_name,
+                Track.artist_name == song.artist_name
+            )
+        )
+        return existing_track
 
 def save_track(song: Song):
     analysis_data = (
@@ -32,10 +52,7 @@ def save_track(song: Song):
     )
 
     with Session(engine) as session:
-        existing_track = session.get(Track, song.rec_mbid)
-        if existing_track is not None:
-            print(f"Track {song.song_name} already saved in DB")
-            return
+        if get_track(session=session, song=song): return
 
         track = Track(rec_mbid=song.rec_mbid, 
                       artist_name=song.artist_name,
@@ -45,11 +62,11 @@ def save_track(song: Song):
         session.add(track)
         session.commit()
 
-def load_track(recording_mbid: str) -> Song | None:
+def load_track(song: Song) -> Song | None:
     with Session(engine) as session:
-        track = session.get(Track, recording_mbid)
-        if track is None:
-            return None
+        track = get_track(session, song)
+
+        if not track: return None # track not in db
 
         return Song.model_validate({
             "rec_mbid": track.rec_mbid,
@@ -59,11 +76,12 @@ def load_track(recording_mbid: str) -> Song | None:
             "analysis": track.analysis
         })
 
-def load_tracks(rec_mbids: list[str]) -> list[Song]:
+def load_tracks(songs: list[Song]) -> list[Song] | None:
     with Session(engine) as session:
-        tracks = []
-        for rec_mbid in rec_mbids:
-            tracks.append(session.get(Track, rec_mbid))
+
+        tracks = [get_track(session=session, song=song) for song in songs]
+        
+        if None in tracks: return None # at least 1 song not in db
 
         return [Song.model_validate({
             "rec_mbid": track.rec_mbid,
