@@ -1,0 +1,161 @@
+/* Shared colours */
+
+:root {
+    --ink: #202a26;
+    --muted: #69756f;
+    --paper: #f7f6f1;
+    --surface: #fffefa;
+    --line: #e2e5de;
+    --green: #244b3e;
+    --green-soft: #e8f0eb;
+    --copper: #b7653b;
+}
+
+/* Page defaults */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Header and navigation */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    padding: 0 clamp(1rem, 5vw, 4rem);
+    background: #18221f;
+    border-bottom: 3px solid var(--copper);
+}
+
+.brand {
+    color: #f8f5ef;
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+}
+
+.navbar {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.navbar a {
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    color: #e9eee9;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+.navbar a:hover, .navbar a:focus-visible {
+    background: #30423a;
+    outline: none;
+}
+
+.navbar a[aria-current="page"] {
+    background: #a64f2b;
+    color: white;
+}
+
+/* Page headings */
+
+.eyebrow {
+    margin: 0 0 0.45rem;
+    color: var(--copper);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    line-height: 1.12;
+    letter-spacing: -0.04em;
+}
+
+.intro p:last-child {
+    max-width: 650px;
+    color: var(--muted);
+}
+
+/* Selectable form options */
+
+.choice {
+    position: relative;
+    cursor: pointer;
+}
+
+.choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.choice span {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    background: white;
+}
+
+.choice input:checked + span {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.choice input:focus-visible + span {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 2px;
+}
+
+/* Form sections */
+
+.panel, .section {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 4px 18px rgb(32 42 38 / 4%);
+}
+
+/* Buttons */
+
+.button, .save-button {
+    border-radius: 10px;
+    background: var(--green);
+    color: white;
+    font-weight: 700;
+}
+
+.button:hover, .save-button:hover {
+    background: #193b30;
+}
+
+.button:focus-visible, .save-button:focus-visible {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 3px;
+}
+
+/* Text fields and tuning menus */
+
+input[type="text"], input[type="number"], select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: white;
+    color: var(--ink);
+    font: inherit;
+}

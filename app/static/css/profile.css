@@ -1,71 +1,13 @@
-/* Colours used throughout the page */
+/* Profile page styles. Shared defaults are in base.css. */
+
+@import url("base.css");
+
 :root {
     color-scheme: light;
-    --ink: #202a26;
-    --muted: #69756f;
-    --paper: #f7f6f1;
-    --surface: #fffefa;
-    --line: #e2e5de;
-    --green: #244b3e;
-    --green-soft: #e8f0eb;
-    --copper: #b7653b;
-}
-
-/* Page defaults */
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-/* Header and navigation */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 70px;
-    padding: 0 clamp(1rem, 5vw, 4rem);
-    background: #18221f;
-    border-bottom: 3px solid var(--copper);
-}
-
-.brand {
-    color: #f8f5ef;
-    font-size: 1.05rem;
-    font-weight: 750;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-}
-
-.navbar {
-    display: flex;
-    gap: 0.4rem;
-}
-
-.navbar a {
-    padding: 0.55rem 0.85rem;
-    border-radius: 8px;
-    color: #e9eee9;
-    font-weight: 550;
-    text-decoration: none;
-}
-
-.navbar a:hover, .navbar a:focus-visible {
-    background: #30423a;
-    outline: none;
-}
-
-.navbar a[aria-current="page"] {
-    background: #a64f2b;
-    color: white;
 }
 
 /* Main page layout */
+
 main {
     width: min(920px, calc(100% - 2rem));
     margin: 3rem auto 5rem;
@@ -75,29 +17,12 @@ main {
     margin-bottom: 2rem;
 }
 
-.eyebrow {
-    margin: 0 0 0.45rem;
-    color: var(--copper);
-    font-size: 0.78rem;
-    font-weight: 750;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-h1 {
-    margin: 0;
-    font-size: clamp(2rem, 5vw, 2.8rem);
-    line-height: 1.12;
-    letter-spacing: -0.04em;
-}
-
 .intro p:last-child {
-    max-width: 650px;
     margin: 0.8rem 0 0;
-    color: var(--muted);
 }
 
 /* Profile sections */
+
 .profile-form {
     display: grid;
     gap: 1.1rem;
@@ -105,12 +30,7 @@ h1 {
 
 .section {
     min-width: 0;
-    margin: 0;
     padding: clamp(1.1rem, 3vw, 1.6rem);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: var(--surface);
-    box-shadow: 0 4px 18px rgb(32 42 38 / 4%);
 }
 
 .section legend {
@@ -126,6 +46,7 @@ h1 {
 }
 
 /* Experience and playing preference buttons */
+
 .choice-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -137,41 +58,18 @@ h1 {
 }
 
 .choice {
-    position: relative;
     display: block;
-    cursor: pointer;
-}
-
-.choice input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
 }
 
 .choice span {
-    display: flex;
     min-height: 54px;
-    align-items: center;
     justify-content: center;
     padding: 0.7rem;
-    border: 1px solid var(--line);
     border-radius: 10px;
-    background: white;
     color: var(--ink);
     font-weight: 620;
     text-align: center;
     transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
-}
-
-.choice input:checked + span {
-    border-color: var(--green);
-    background: var(--green-soft);
-    color: var(--green);
-}
-
-.choice input:focus-visible + span {
-    outline: 3px solid #a6c4b3;
-    outline-offset: 2px;
 }
 
 .choice:hover span {
@@ -180,6 +78,7 @@ h1 {
 }
 
 /* Technique checkboxes */
+
 .technique-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -209,6 +108,7 @@ h1 {
 }
 
 /* Chord picker */
+
 .chord-list {
     display: grid;
     gap: 0.8rem;
@@ -290,6 +190,7 @@ h1 {
 }
 
 /* Tuning selector */
+
 .select-wrap {
     display: grid;
     gap: 0.4rem;
@@ -301,16 +202,11 @@ h1 {
 }
 
 select {
-    width: 100%;
     padding: 0.75rem 0.85rem;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    background: white;
-    color: var(--ink);
-    font: inherit;
 }
 
 /* Save button and footer */
+
 .form-footer {
     display: flex;
     align-items: center;
@@ -326,27 +222,17 @@ select {
 }
 
 .save-button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
     min-height: 48px;
     padding: 0.75rem 1.25rem;
     border: 0;
-    border-radius: 10px;
-    background: var(--green);
-    color: white;
-    font: inherit;
-    font-weight: 700;
     cursor: pointer;
 }
 
-.save-button:hover {
-    background: #193b30;
-}
-
-.save-button:focus-visible {
-    outline: 3px solid #a6c4b3;
-    outline-offset: 3px;
-}
-
 /* Adjust the layout for smaller screens. */
+
 @media (max-width: 700px) {
     main {
         margin-top: 2rem;
@@ -408,6 +294,7 @@ select {
 }
 
 /* Chord groups remain native keyboard-accessible disclosure controls. */
+
 .section-title {
     margin: 0;
     font-size: 1.1rem;

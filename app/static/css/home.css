@@ -1,71 +1,17 @@
-/* Colours used throughout the page */
-:root {
-    --ink: #202a26;
-    --muted: #69756f;
-    --paper: #f7f6f1;
-    --surface: #fffefa;
-    --line: #e2e5de;
-    --green: #244b3e;
-    --green-soft: #e8f0eb;
-    --copper: #b7653b;
-}
+/* Home page styles. Shared defaults are in base.css. */
 
-/* Page defaults */
-* {
-    box-sizing: border-box;
-}
+@import url("base.css");
 
 body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
     font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Header and navigation */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 70px;
-    padding: 0 clamp(1rem, 5vw, 4rem);
-    background: #18221f;
-    border-bottom: 3px solid var(--copper);
-}
-
-.brand {
-    color: #f8f5ef;
-    font-size: 1.05rem;
-    font-weight: 750;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-}
-
-.navbar {
-    display: flex;
-    gap: 0.4rem;
-}
-
 .navbar a {
-    padding: 0.55rem 0.85rem;
-    border-radius: 8px;
-    color: #e9eee9;
     font-size: 0.95rem;
-    font-weight: 550;
-    text-decoration: none;
-}
-
-.navbar a:hover, .navbar a:focus-visible {
-    background: #30423a;
-    outline: none;
-}
-
-.navbar a[aria-current="page"] {
-    background: #a64f2b;
-    color: white;
 }
 
 /* Main page layout */
+
 main {
     width: min(1040px, calc(100% - 2rem));
     margin: clamp(2rem, 7vw, 5.5rem) auto;
@@ -80,16 +26,11 @@ main {
 
 .eyebrow {
     margin: 0 0 0.65rem;
-    color: var(--copper);
-    font-size: 0.78rem;
-    font-weight: 750;
     letter-spacing: 0.13em;
-    text-transform: uppercase;
 }
 
 h1 {
     max-width: 650px;
-    margin: 0;
     font-size: clamp(2.5rem, 7vw, 4.5rem);
     line-height: 1.03;
     letter-spacing: -0.055em;
@@ -103,6 +44,7 @@ h1 {
 }
 
 /* Page actions */
+
 .actions {
     display: flex;
     flex-wrap: wrap;
@@ -116,17 +58,12 @@ h1 {
     justify-content: center;
     padding: 0.7rem 1.1rem;
     border: 1px solid var(--green);
-    border-radius: 10px;
-    background: var(--green);
-    color: white;
-    font-weight: 700;
     text-decoration: none;
     transition: transform 140ms ease, background 140ms ease;
 }
 
 .button:hover {
     transform: translateY(-1px);
-    background: #193b30;
 }
 
 .button.secondary {
@@ -139,6 +76,7 @@ h1 {
 }
 
 /* How it works */
+
 .steps-card {
     padding: clamp(1.3rem, 3vw, 2rem);
     border: 1px solid var(--line);
@@ -197,6 +135,7 @@ h1 {
 }
 
 /* Adjust the layout for smaller screens. */
+
 @media (max-width: 760px) {
     .hero {
         grid-template-columns: 1fr;
