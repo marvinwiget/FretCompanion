@@ -58,23 +58,30 @@ def search():
 
             for raw_song in raw_songs:
                 metadata = raw_song["track_metadata"] # wont work with top songs -> different json return
-                pprint.pprint(metadata)
+                #pprint.pprint(metadata)
+
                 songs_batch.append(Song(
-                    rec_mbid=metadata["mbid_mapping"]["recording_mbid"],
+                    rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if "mbid_mapping" in metadata.keys() else None,
                     artist_name=metadata["artist_name"],
                     song_name=metadata["track_name"]
                 ))
-            needs_analysis = [s for s in songs_batch if load_track(s.rec_mbid) is None]
+            
+            needs_analysis = [s for s in songs_batch if load_track(s) is None] # make it a set so the same song doesnt get analysed twice
+            unique_needs_analysis = []
+            for s in needs_analysis:
+                if s in unique_needs_analysis: continue
+                unique_needs_analysis.append(s)
+
+            needs_analysis = unique_needs_analysis
             
             if needs_analysis:
-                print("not everything in database")
                 analysed_batch = get_songs_analysis(needs_analysis)
 
                 for song, analysis in zip(needs_analysis, analysed_batch):
                     song.analysis = analysis
                     save_track(song=song)
 
-            params["eva_songs"] = load_tracks([s.rec_mbid for s in songs_batch])
+            params["eva_songs"] = load_tracks([s for s in songs_batch])
 
             try: 
                 profile_data= session.get("guitar_profile")
