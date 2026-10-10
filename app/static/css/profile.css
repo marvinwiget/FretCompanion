@@ -1,0 +1,517 @@
+/* Colours used throughout the page */
+:root {
+    color-scheme: light;
+    --ink: #202a26;
+    --muted: #69756f;
+    --paper: #f7f6f1;
+    --surface: #fffefa;
+    --line: #e2e5de;
+    --green: #244b3e;
+    --green-soft: #e8f0eb;
+    --copper: #b7653b;
+}
+
+/* Page defaults */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Header and navigation */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    padding: 0 clamp(1rem, 5vw, 4rem);
+    background: #18221f;
+    border-bottom: 3px solid var(--copper);
+}
+
+.brand {
+    color: #f8f5ef;
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+}
+
+.navbar {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.navbar a {
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    color: #e9eee9;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+.navbar a:hover, .navbar a:focus-visible {
+    background: #30423a;
+    outline: none;
+}
+
+.navbar a[aria-current="page"] {
+    background: #a64f2b;
+    color: white;
+}
+
+/* Main page layout */
+main {
+    width: min(920px, calc(100% - 2rem));
+    margin: 3rem auto 5rem;
+}
+
+.intro {
+    margin-bottom: 2rem;
+}
+
+.eyebrow {
+    margin: 0 0 0.45rem;
+    color: var(--copper);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    line-height: 1.12;
+    letter-spacing: -0.04em;
+}
+
+.intro p:last-child {
+    max-width: 650px;
+    margin: 0.8rem 0 0;
+    color: var(--muted);
+}
+
+/* Profile sections */
+.profile-form {
+    display: grid;
+    gap: 1.1rem;
+}
+
+.section {
+    min-width: 0;
+    margin: 0;
+    padding: clamp(1.1rem, 3vw, 1.6rem);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 4px 18px rgb(32 42 38 / 4%);
+}
+
+.section legend {
+    padding: 0 0.35rem;
+    font-size: 1.1rem;
+    font-weight: 720;
+}
+
+.section-hint {
+    margin: -0.15rem 0 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* Experience and playing preference buttons */
+.choice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.choice-grid.preference-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+}
+
+.choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.choice span {
+    display: flex;
+    min-height: 54px;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: white;
+    color: var(--ink);
+    font-weight: 620;
+    text-align: center;
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.choice input:checked + span {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.choice input:focus-visible + span {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 2px;
+}
+
+.choice:hover span {
+    border-color: #aab9af;
+    transform: translateY(-1px);
+}
+
+/* Technique checkboxes */
+.technique-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.technique-choice span {
+    justify-content: flex-start;
+    min-height: 48px;
+}
+
+.technique-choice span::before {
+    content: "";
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    margin-right: 0.65rem;
+    border: 1.5px solid #aab4ad;
+    border-radius: 5px;
+    background: white;
+}
+
+.technique-choice input:checked + span::before {
+    border-color: var(--green);
+    background: var(--green);
+    box-shadow: inset 0 0 0 3px white;
+}
+
+/* Chord picker */
+.chord-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.chord-row {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) 3fr auto;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.chord-label {
+    font-weight: 700;
+}
+
+.chord-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.chord-choice {
+    position: relative;
+    cursor: pointer;
+}
+
+.chord-choice input, .select-all input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.chord-choice span {
+    display: inline-flex;
+    min-width: 42px;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fffefa;
+    font-weight: 650;
+}
+
+.chord-choice input:checked + span {
+    border-color: var(--green);
+    background: var(--green);
+    color: white;
+}
+
+.chord-choice input:focus-visible + span, .select-all input:focus-visible + span {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 2px;
+}
+
+.select-all {
+    position: relative;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.select-all span {
+    display: inline-block;
+    padding: 0.4rem 0.55rem;
+    border-radius: 7px;
+}
+
+.select-all:hover span {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+/* Tuning selector */
+.select-wrap {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 420px;
+}
+
+.select-wrap label {
+    font-weight: 650;
+}
+
+select {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: white;
+    color: var(--ink);
+    font: inherit;
+}
+
+/* Save button and footer */
+.form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 0.25rem;
+}
+
+.form-footer p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.save-button {
+    min-height: 48px;
+    padding: 0.75rem 1.25rem;
+    border: 0;
+    border-radius: 10px;
+    background: var(--green);
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background: #193b30;
+}
+
+.save-button:focus-visible {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 3px;
+}
+
+/* Adjust the layout for smaller screens. */
+@media (max-width: 700px) {
+    main {
+        margin-top: 2rem;
+    }
+
+    .chord-row {
+        grid-template-columns: 1fr auto;
+    }
+
+    .chord-buttons {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .select-all {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .choice-grid.preference-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 420px) {
+    .header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-block: 0.85rem;
+    }
+
+    .navbar {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .navbar a {
+        padding-inline: 0.55rem;
+        font-size: 0.9rem;
+    }
+
+    .choice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .technique-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .save-button {
+        width: 100%;
+    }
+}
+
+/* Chord groups remain native keyboard-accessible disclosure controls. */
+.section-title {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.chord-hint {
+    margin-top: 0.35rem;
+}
+
+.selection-count {
+    color: var(--green);
+    font-weight: 650;
+}
+
+.saved-message {
+    padding: 1rem;
+    background: var(--green-soft);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+}
+
+.chord-group {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+}
+
+.chord-group summary {
+    min-height: 48px;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.row-count {
+    display: inline-block;
+    margin-left: 0.6rem;
+    color: #546159;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.chord-row {
+    display: block;
+    border: 0;
+    margin: 0;
+    padding: 0 1rem 1rem;
+}
+
+.chord-buttons {
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+}
+
+.chord-choice span {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.select-all input {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--green);
+}
+
+.select-all {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+}
+
+.select-all input:checked + span {
+    font-weight: 700;
+    color: var(--green);
+}
+
+.retained-chord {
+    display: inline-block;
+    margin: 0.5rem 0.25rem 0 0;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+summary:focus-visible, select:focus-visible {
+    outline: 3px solid var(--copper);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition: none !important;
+    }
+}
