@@ -3,152 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>Guitar Profile | Fret Companion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
-<style>
-    * {
-        box-sizing: border-box;
-    }
-
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 6%;
-        background-color: #18221f;
-        border-bottom: 3px solid #b7653b;
-    }
-
-    .navbar {
-        display: flex;
-        gap: 12px;
-    }
-
-    .navbar a {
-        color: #f8f5ef;
-        text-decoration: none;
-        padding: 9px 15px;
-        border-radius: 7px;
-        font: 500 16px/1.2 system-ui, sans-serif;
-        transition: background-color 160ms ease, color 160ms ease;
-    }
-
-    .navbar a:hover,
-    .navbar a:focus-visible {
-        color: white;
-        background-color: #a64f2b;
-        outline: none;
-    }
-
-    @media (max-width: 480px) {
-        .header {
-            padding-inline: 1rem;
-        }
-
-        .navbar {
-            gap: 2px;
-        }
-
-        .navbar a {
-            padding: 9px;
-            font-size: 14px;
-        }
-    }
-</style>
 <body>
+    {% set saved = session.get('guitar_profile') or {} %}
+    {% set learned = saved.get('learned_chords', []) %}
     <header class="header">
-        <nav class="navbar">
-            <a href="./">Home</a>
-            <a href="./guitar-profile">Guitar Profile</a>
-            <a href="./search">Search</a>
+        <a class="brand" href="/">Fret Companion</a>
+        <nav class="navbar" aria-label="Main navigation">
+            <a href="/">Home</a>
+            <a href="/guitar-profile" aria-current="page">Guitar Profile</a>
+            <a href="/search">Search</a>
         </nav>
     </header>
+
     <main>
-        <form action="/guitar-profile" method="post">
+        <section class="intro" aria-labelledby="page-title">
+            <p class="eyebrow">Make it yours</p>
+            <h1 id="page-title">Your guitar profile</h1>
+            <p>Tell us what feels comfortable today. We’ll use it to find songs that fit your playing and challenges worth working toward.</p>
+        </section>
 
-            <fieldset>
-              <legend>Guitar Experience</legend>
-              <label for="experience">Your guitar level:</label>
-              <input type="radio" name="experience" value="Beginner" checked><label>Beginner</label>
-              <input type="radio" name="experience" value="Intermediate"><label>Intermediate</label>
-              <input type="radio" name="experience" value="Advanced"><label>Advanced</label>
+        {% if request.method == 'POST' %}<p class="saved-message" role="status">Your guitar profile has been saved.</p>{% endif %}
+        <form class="profile-form" action="/guitar-profile" method="post">
+            <fieldset class="section">
+                <legend>Playing experience</legend>
+                <p class="section-hint">Choose the level that best describes where you are now.</p>
+                <div class="choice-grid">
+                    <label class="choice">
+                        <input type="radio" name="experience" value="Beginner" {% if saved.get("experience_level", "Beginner") == "Beginner" %}checked{% endif %}>
+                        <span>Beginner</span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="experience" value="Intermediate" {% if saved.get("experience_level", "Beginner") == "Intermediate" %}checked{% endif %}>
+                        <span>Intermediate</span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="experience" value="Advanced" {% if saved.get("experience_level", "Beginner") == "Advanced" %}checked{% endif %}>
+                        <span>Advanced</span>
+                    </label>
+                </div>
             </fieldset>
 
-            <fieldset>
-              <legend>Playing Preference</legend>
-              <label for="solo_type">Pick your preference:</label>
-              <input type="radio" name="solo_type" value="Rhythm"><label>Rhythm</label>
-              <input type="radio" name="solo_type" value="Lead"><label>Lead</label>
-              <input type="radio" name="solo_type" value="Balanced"><label>Balanced</label>
-              <input type="radio" name="solo_type" value="Indifferent" checked><label>Indifferent</label>
+            <fieldset class="section">
+                <legend>What do you enjoy playing?</legend>
+                <p class="section-hint">This helps balance rhythm and lead parts in your suggestions.</p>
+                <div class="choice-grid preference-grid">
+                    {% for value, label in [("Rhythm", "Rhythm"), ("Lead", "Lead"), ("Balanced", "A bit of both"), ("Indifferent", "No preference")] %}
+                    <label class="choice">
+                        <input type="radio" name="solo_type" value="{{ value }}" {% if value == saved.get("solo_preference", "Indifferent") %}checked{% endif %}>
+                        <span>{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
             </fieldset>
 
-            <fieldset>
-              <legend>Guitar Techniques</legend>
-              <label><input type="checkbox" name="technique" value="Fingerpicking">Fingerpicking</label>
-              <label><input type="checkbox" name="technique" value="Strumming">Strumming</label>
-              <label><input type="checkbox" name="technique" value="Hammer-on">Hammer-on</label>
-              <label><input type="checkbox" name="technique" value="Bending">Bending</label>
+            <fieldset class="section">
+                <legend>Techniques you know</legend>
+                <p class="section-hint">Pick the techniques you’re comfortable using. You can add more as you learn.</p>
+                <div class="technique-grid">
+                    {% for technique in ["Fingerpicking", "Strumming", "Hammer-on", "Pull-off", "Bending", "Slides", "Palm muting", "Tapping"] %}
+                    <label class="choice technique-choice">
+                        <input type="checkbox" name="technique" value="{{ technique }}" {% if technique in saved.get("techniques", []) %}checked{% endif %}>
+                        <span>{{ technique }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
             </fieldset>
 
-            {% for chord_type in params.chord_types %}
-            <fieldset>
-                <legend>{{ chord_type.label }}</legend>
-
-                {% for root in params.roots %}
-                {% set chord = root ~ chord_type.suffix %}
-
-                <label>
-                    <input
-                    type="checkbox"
-                    name="chords"
-                    value="{{ chord }}"
-                    class="chord-option"
-                    >
-                    {{ chord }}
+            <section class="section" aria-labelledby="chords-heading">
+                <h2 id="chords-heading" class="section-title">Chords you can play</h2>
+                <p class="section-hint chord-hint">Start with major and minor chords. Expand another chord type when you need it. Collapsing a group keeps your selections.</p>
+                <p id="chord-total" class="selection-count" aria-live="polite"></p>
+                <div class="chord-list">
+                    {% set available = namespace(chords=[]) %}
+                    {% for chord_type in params.chord_types %}
+                    <details class="chord-group" {% if chord_type.suffix in ['', 'm'] %}open{% endif %}>
+                        <summary>{{ chord_type.label }} <span class="row-count"></span></summary>
+                        <fieldset class="chord-row">
+                            <legend class="visually-hidden">{{ chord_type.label }} chords</legend>
+                            <div class="chord-buttons">
+                                {% for root in params.roots %}
+                                {% set chord = root ~ chord_type.suffix %}
+                                {% set available.chords = available.chords + [chord] %}
+                                <label class="chord-choice">
+                                    <input type="checkbox" name="chords" value="{{ chord }}" class="chord-option" {% if chord in learned %}checked{% endif %}>
+                                    <span>{{ chord }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            <label class="select-all">
+                                <input type="checkbox" class="select-all-checkbox">
+                                <span>Select all {{ chord_type.label|lower }} chords</span>
+                            </label>
+                        </fieldset>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% for chord in learned if chord not in available.chords %}
+                <label class="chord-choice retained-chord">
+                    <input type="checkbox" name="chords" value="{{ chord }}" class="chord-option" checked>
+                    <span>{{ chord }}</span>
                 </label>
                 {% endfor %}
+            </section>
 
-                <label>
-                <input type="checkbox" class="select-all">
-                Select all
-                </label>
+            <fieldset class="section">
+                <legend>Tuning</legend>
+                <p class="section-hint">Choose the tuning you usually play in.</p>
+                <div class="select-wrap">
+                    <label for="tuning">Preferred tuning</label>
+                    <select id="tuning" name="tuning">
+                        {% set tunings = [
+                            ('Standard', 'Standard — E A D G B E'),
+                            ('Indifferent', 'No preference'),
+                            ('Drop D', 'Drop D — D A D G B E'),
+                            ('Half-step down', 'Half-step down — E♭ A♭ D♭ G♭ B♭ E♭'),
+                            ('D Standard', 'D standard — D G C F A D'),
+                            ('Drop C', 'Drop C — C G C F A D'),
+                            ('Open G', 'Open G — D G D G B D'),
+                            ('Open D', 'Open D — D A D F♯ A D'),
+                            ('Open E', 'Open E — E B E G♯ B E'),
+                            ('Open A', 'Open A — E A E A C♯ E'),
+                            ('DADGAD', 'DADGAD — D A D G A D')
+                        ] %}
+                        {% set selected_tuning = saved.get('tuning_preferences', 'Standard') %}
+                        {% for value, label in tunings %}
+                        <option value="{{ value }}" {% if selected_tuning == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                        {% if selected_tuning not in tunings|map(attribute=0)|list %}
+                        <option value="{{ selected_tuning }}" selected>{{ selected_tuning }}</option>
+                        {% endif %}
+                    </select>
+                </div>
             </fieldset>
-            {% endfor %}
 
-            <fieldset>
-              <legend>Tuning Preference</legend>
-              <label for="tuning">Choose a tuning:</label>
-
-              <select name="tuning">
-                <option value="Standard" >Standard Tuning</option>
-                <option value="Indifferent">Indifferent</option>
-              </select>
-            </fieldset>
-
-        <button type="submit">Save selected chords</button>
+            <div class="form-footer">
+                <p>You can update these preferences whenever you like.</p>
+                <button class="save-button" type="submit">Save guitar profile</button>
+            </div>
         </form>
     </main>
+
+    
 </body>
-
-<script>
-  document.querySelectorAll("fieldset").forEach((row) => {
-    const selectAll = row.querySelector(".select-all");
-    const chordOptions = row.querySelectorAll(".chord-option");
-
-    selectAll.addEventListener("change", () => {
-      chordOptions.forEach((chord) => {
-        chord.checked = selectAll.checked;
-      });
-    });
-
-    chordOptions.forEach((chord) => {
-      chord.addEventListener("change", () => {
-        selectAll.checked = [...chordOptions].every((option) => option.checked);
-      });
-    });
-  });
-</script>
-
 </html>
-

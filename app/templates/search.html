@@ -3,143 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fret Companion</title>
+    <meta name="theme-color" content="#18221f">
+    <title>Find songs | Fret Companion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
-<style>
-    * {
-        box-sizing: border-box;
-    }
-
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 6%;
-        background-color: #18221f;
-        border-bottom: 3px solid #b7653b;
-    }
-
-    .navbar {
-        display: flex;
-        gap: 12px;
-    }
-
-    .navbar a {
-        color: #f8f5ef;
-        text-decoration: none;
-        padding: 9px 15px;
-        border-radius: 7px;
-        font: 500 16px/1.2 system-ui, sans-serif;
-        transition: background-color 160ms ease, color 160ms ease;
-    }
-
-    .navbar a:hover,
-    .navbar a:focus-visible {
-        color: white;
-        background-color: #a64f2b;
-        outline: none;
-    }
-
-    @media (max-width: 480px) {
-        .header {
-            padding-inline: 1rem;
-        }
-
-        .navbar {
-            gap: 2px;
-        }
-
-        .navbar a {
-            padding: 9px;
-            font-size: 14px;
-        }
-    }
-</style>
 <body>
     <header class="header">
-        <nav class="navbar">
-            <a href="./">Home</a>
-            <a href="./guitar-profile">Guitar Profile</a>
-            <a href="./search">Search</a>
+        <a class="brand" href="/">Fret Companion</a>
+        <nav class="navbar" aria-label="Main navigation">
+            <a href="/">Home</a>
+            <a href="/guitar-profile">Guitar Profile</a>
+            <a href="/search" aria-current="page">Search</a>
         </nav>
     </header>
-    <main>
-        <fieldset>
-            <legend>Enter your data</legend>
-            <form action="/search" method="POST">
-                <input type="radio" name="result_type" value="last_listened_songs" checked>
-                <label for="result_type">Last listened tracks</label>
-                <input id="top_tracks_input" type="radio" name="result_type" value="top_songs">
-                <label for="result_type">Top tracks</label><br><br>
 
-                <label for="username">Username*</label>
-                <input type="text" name="username" required>
-                <br><br>
-                <label for="count">Amount of songs</label>
-                <input type="number" name="count" value="25" min="1" max="100" required>
-                
-                <div id="time_range">
-                <label for="time_range">Time range</label>
-                <select name="time_range">
-                    <option value="week">1 Week</option>
-                    <option value="month">1 Month</option>
-                    <option value="year">1 Year</option>
-                    <option value="all_time">All-time</option>
-                </select><br><br>
+    <main>
+        <section class="intro" aria-labelledby="page-title">
+            <p class="eyebrow">Your music, ready to play</p>
+            <h1>Find your next guitar song</h1>
+            <p>Look up recent listens or your top tracks from ListenBrainz, then see how each song fits your guitar profile.</p>
+        </section>
+
+        <fieldset class="panel">
+            <legend>Choose your listening sample</legend>
+            <p class="panel-hint">Enter a ListenBrainz username and choose which tracks to explore.</p>
+            <form action="/search" method="POST">
+                <div class="field spaced-field">
+                    <label for="username">ListenBrainz username</label>
+                    <input id="username" type="text" name="username" autocomplete="username" placeholder="e.g. marvin" required>
                 </div>
 
-                <button type="submit" value="Search">Search</button>
+                <div class="field spaced-field">
+                    <span class="field-title">Track source</span>
+                    <div class="choice-row">
+                        <label class="choice">
+                            <input type="radio" name="result_type" value="last_listened_songs" {% if params.result_type != "top_songs" %}checked{% endif %}>
+                            <span>Recently played</span>
+                        </label>
+                        <label class="choice">
+                            <input id="top_tracks_input" type="radio" name="result_type" value="top_songs" {% if params.result_type == "top_songs" %}checked{% endif %}>
+                            <span>Top tracks</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="count">Number of tracks</label>
+                        <input id="count" type="number" name="count" value="25" min="1" max="100" required>
+                    </div>
+                    <div class="field range-field" id="time_range_field">
+                        <label for="time_range">Top tracks time range</label>
+                        <select id="time_range" name="time_range">
+                            <option value="week">Last week</option>
+                            <option value="month" selected>Last month</option>
+                            <option value="year">Last year</option>
+                            <option value="all_time">All time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="actions"><button class="button" type="submit">Find my songs</button></div>
+
                 {% if not params.user_found %}
-                <p style="color:red">User not found.</p><br>
+                <p class="message error" role="alert">We couldn’t find that ListenBrainz user. Check the username and try again.</p>
                 {% elif params.fetching_songs %}
-                <p>Searching for your songs...</p>
+                <p class="message info" role="status">Searching your listening history…</p>
                 {% elif params.analyzing_songs %}
-                <p>Analyzing songs...</p>
+                <p class="message info" role="status">Analyzing your songs…</p>
                 {% endif %}
             </form>
         </fieldset>
 
         {% if not params.recent_activity and params.user_found %}
-        <h2>No recent activity from this user.</h2>
+        <p class="message info" role="status">No recent listening activity was found for this user.</p>
         {% elif params.recent_activity and params.user_found and params.eva_songs %}
-        <h2>Your results:</h2>
+        <div class="results-toolbar">
+            <h2 class="results-heading">Your results <span class="results-count">({{ params.eva_songs|length }} tracks)</span></h2>
+            <button class="button sort-button" id="sort-match" type="button" aria-controls="song-results" aria-pressed="false" hidden>Sort by highest match <span class="sort-state" aria-hidden="true">Off</span></button>
+        </div>
+        <p id="sort-status" class="sort-status" role="status"></p>
+        <section class="song-list" id="song-results" aria-label="Track recommendations">
+            {% for song in params.eva_songs %}
+            <article class="song-card" data-match="{{ song.match if song.match is not none else '' }}">
+                <div class="song-top">
+                    <div>
+                        <h3 class="song-title">{{ song.song_name }}</h3>
+                        <p class="artist">{{ song.artist_name }}</p>
+                    </div>
+                    {% if song.match is not none %}<span class="match">{{ song.match }}% match</span>{% endif %}
+                </div>
+                {% if song.analysis %}
+                <dl class="song-details">
+                    <div><dt>Difficulty</dt><dd>{{ song.analysis.overall_difficulty }}</dd></div>
+                    <div><dt>Tuning</dt><dd>{{ song.analysis.tuning }}</dd></div>
+                    <div><dt>Chords</dt><dd>{{ song.analysis.required_chords|join(", ") }}</dd></div>
+                    <div><dt>Techniques</dt><dd>{{ song.analysis.techniques|join(", ") }}</dd></div>
+                    <div class="summary"><dt>Song notes</dt><dd>{{ song.analysis.explanation }}</dd></div>
+                </dl>
+                {% else %}
+                <p class="message info">Guitar analysis is not available for this track yet.</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
         {% endif %}
-
-        {% for song in params.eva_songs %}
-        <fieldset>
-        <legend>Track {{ loop.index }}</legend>
-            <span style="font-weight: bold;">{{ song.song_name }} | {{ song.match }}% Match for you</span><br>
-            <span>{{ song.artist_name }}</span><br>
-            <ul>
-                <li>Difficulty: {{ song.analysis.overall_difficulty }}</li>
-                <li>Chords: {{ song.analysis.required_chords }}</li>
-                <li>Techniques: {{ song.analysis.techniques }}</li>
-                <li>Tuning: {{ song.analysis.tuning }}</li>
-                <li>Summary: {{ song.analysis.explanation }}</li>
-            </ul>
-        </fieldset>
-        {% endfor %}
     </main>
+
+    
 </body>
-<script>
-    const timeRange = document.getElementById("time_range");
-    const resultTypeRadios = document.querySelectorAll(
-        'input[name="result_type"]'
-    );
-
-    function updateTimeRangeVisibility() {
-        const selectedResultType = document.querySelector(
-        'input[name="result_type"]:checked'
-        );
-
-        timeRange.style.visibility =
-        selectedResultType.value === "top_songs" ? "visible" : "hidden";
-    }
-
-    resultTypeRadios.forEach((radio) => {
-        radio.addEventListener("change", updateTimeRangeVisibility);
-    });
-
-    updateTimeRangeVisibility();
-</script>
 </html>

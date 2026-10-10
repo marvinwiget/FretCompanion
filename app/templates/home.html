@@ -3,80 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fret Companion</title>
+    <meta name="theme-color" content="#18221f">
+    <title>Fret Companion | Find your next song to play</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
-<style>
-    * {
-        box-sizing: border-box;
-    }
-
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 6%;
-        background-color: #18221f;
-        border-bottom: 3px solid #b7653b;
-    }
-
-    .navbar {
-        display: flex;
-        gap: 12px;
-    }
-
-    .navbar a {
-        color: #f8f5ef;
-        text-decoration: none;
-        padding: 9px 15px;
-        border-radius: 7px;
-        font: 500 16px/1.2 system-ui, sans-serif;
-        transition: background-color 160ms ease, color 160ms ease;
-    }
-
-    .navbar a:hover,
-    .navbar a:focus-visible {
-        color: white;
-        background-color: #a64f2b;
-        outline: none;
-    }
-
-    @media (max-width: 480px) {
-        .header {
-            padding-inline: 1rem;
-        }
-
-        .navbar {
-            gap: 2px;
-        }
-
-        .navbar a {
-            padding: 9px;
-            font-size: 14px;
-        }
-    }
-</style>
 <body>
     <header class="header">
-        <nav class="navbar">
-            <a href="./">Home</a>
-            <a href="./guitar-profile">Guitar Profile</a>
-            <a href="./search">Search</a>
+        <a class="brand" href="/">Fret Companion</a>
+        <nav class="navbar" aria-label="Main navigation">
+            <a href="/" aria-current="page">Home</a>
+            <a href="/guitar-profile">Guitar Profile</a>
+            <a href="/search">Search</a>
         </nav>
     </header>
     <main>
-        <div>
-            <span>Welcome to Fret Companion</span>
-            <span>Always have a song ready to play</span>
-        </div>
-        <div>
-            <span>How to use this website:</span>
-            <span>
-                <p>Personalise your guitar preferences</p>
-                <p>Search for your ListenBrainz username</p>
-                <p>Find the best match for you</p>
-                <a href="/guitar-profile">Start!</a>
-            </span>
-        </div>
+        <section class="hero">
+            <div>
+                <p class="eyebrow">Your listening, your next guitar song</p>
+                <h1>Always have a song ready to play.</h1>
+                <p class="hero-copy">Find guitar songs from music you already listen to. Fret Companion compares each track with your playing experience, chords, techniques, and tuning preferences.</p>
+                <div class="actions">
+                    <a class="button" href="/guitar-profile">Set up your guitar profile</a>
+                    <a class="button secondary" href="/search">Find songs</a>
+                </div>
+            </div>
+            <aside class="steps-card" aria-labelledby="how-title">
+                <h2 id="how-title">How it works</h2>
+                <ol class="steps">
+                    <li><span><strong>Tell us how you play</strong>Choose your level, familiar chords, techniques, and tuning.</span></li>
+                    <li><span><strong>Connect your listening</strong>Enter your ListenBrainz username to find music from your own history.</span></li>
+                    <li><span><strong>Pick your next challenge</strong>See track difficulty and how well it fits your current skills.</span></li>
+                </ol>
+                <p class="note">A lower match can still be a great long-term goal. Use the score as a guide, not a limit.</p>
+            </aside>
+        </section>
     </main>
 </body>
 </html>
