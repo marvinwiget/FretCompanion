@@ -1,5 +1,6 @@
 # flask --app app/routes run
 from flask import Flask, request, render_template, session
+from pydantic import ValidationError
 import secrets
 import time
 import pprint
@@ -11,6 +12,9 @@ from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
 from .helper.chords import get_roots, get_chord_types
 from .database.session import save_track, load_track, load_tracks
+
+from .exceptions import GuitarProfileInvalid, LBUserNotFound, LBUnavailable, NoUserActivity
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
 
@@ -20,11 +24,13 @@ def home():
 
 @app.route("/search", methods=['GET', 'POST'])
 def search():
+
     params = {
         "user_found": True,
         "recent_activity": True,
         "result_type": "last_listened_songs",
-        "eva_songs": []
+        "eva_songs": [],
+        "profile_submitted": session.get("profile_submitted")
         }
     
     if request.method == 'POST':
@@ -38,23 +44,38 @@ def search():
         raw_songs = []
 
         try: 
+            if session.get("profile_submitted") is None:
+                raise GuitarProfileInvalid
+
             if result_type == "last_listened_songs":
                 raw_songs = get_latest_songs(username, count=count)
+
+                for raw_song in raw_songs:
+                    metadata = raw_song["track_metadata"] # wont work with top songs -> different json return
+                                    #pprint.pprint(metadata)
+                    
+                    songs_batch.append(Song(
+                        rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if "mbid_mapping" in metadata.keys() else None,
+                        artist_name=metadata["artist_name"],
+                        song_name=metadata["track_name"]
+                        )
+                    )
+
             else:
                 raw_songs = get_top_songs(username, count=count, time_range=time_range)
                 params["result_type"] = "top_songs"
 
+                for raw_song in raw_songs:
+                    songs_batch.append(Song(
+                        rec_mbid=raw_song["recording_mbid"] if "recording_mbid" in raw_song.keys() else None,
+                        artist_name=raw_song["artist_name"],
+                        song_name=raw_song["track_name"]
+                        )
+                    )
+
             if not raw_songs: params["recent_activity"] = False # no recent activity found for user
 
-            for raw_song in raw_songs:
-                metadata = raw_song["track_metadata"] # wont work with top songs -> different json return
-                #pprint.pprint(metadata)
-
-                songs_batch.append(Song(
-                    rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if "mbid_mapping" in metadata.keys() else None,
-                    artist_name=metadata["artist_name"],
-                    song_name=metadata["track_name"]
-                ))
+            #pprint.pprint(raw_songs)
             
             needs_analysis = [s for s in songs_batch if load_track(s) is None] # make it a set so the same song doesnt get analysed twice
             unique_needs_analysis = []
@@ -73,20 +94,20 @@ def search():
 
             params["eva_songs"] = load_tracks([s for s in songs_batch])
 
-            profile_data= session.get("guitar_profile")
-            profile = GuitarProfile.model_validate(profile_data)
-            evaluate_match(songs=params["eva_songs"], user=profile)
+            evaluate_match(songs=params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
 
             end_time = time.time()
             print(f"Total time elapsed: {end_time - start_time:.2f} seconds")
 
-
-        except NameError:
+        except LBUserNotFound:
             params["user_found"] = False
             params["recent_activity"] = False
-        # except Exception as e:
-        #     print(e)
-        #     params["recent_activity"] = False
+        except LBUnavailable:
+            params["recent_activity"] = False
+        except NoUserActivity:
+            params["recent_activity"] = False
+        except GuitarProfileInvalid:
+            params["profile_submitted"] = False
 
     return render_template("search.html", params=params)
 
@@ -114,7 +135,7 @@ def profile():
             in_training_chords=[],
             tuning_preference=tuning_preference
         ).model_dump(mode="json")
-
+        session["profile_submitted"] = True
 
     return render_template("profile.html", params=params)
 

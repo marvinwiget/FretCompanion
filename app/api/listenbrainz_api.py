@@ -1,6 +1,8 @@
 import requests
 import time
 
+from app.exceptions import LBUserNotFound, LBUnavailable, NoUserActivity
+
 ROOT = "https://api.listenbrainz.org"
 
 TOKEN = 'YOUR_TOKEN_HERE'
@@ -23,10 +25,10 @@ def get_latest_songs(username: str, min_ts=None, max_ts=None, count: int = 20):
         timeout=20
     )
 
-    #print(response.status_code)
+    print(response.status_code)
 
     if response.status_code == 404: # user not found
-        raise NameError
+        raise LBUserNotFound(f"{username} not found.")
     
     response.raise_for_status()
 
@@ -46,10 +48,13 @@ def get_top_songs(username: str, count: int = 20, time_range: str = "month"):
     )
 
     if response.status_code == 204: # no statistics for this user
-        return []
+        raise NoUserActivity(f"{username} has no recent activity.")
 
-    if response.status_code == 402: # user not found
-        raise NameError
+    if response.status_code == 400:
+        raise LBUnavailable(f"ListenBrainz: Bad Request")
+
+    if response.status_code == 404: # user not found
+        raise LBUserNotFound(f"{username} not found.")
 
     response.raise_for_status()
 
