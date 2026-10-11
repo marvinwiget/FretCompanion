@@ -1,6 +1,7 @@
 from sqlalchemy import String, create_engine, select, JSON, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
+from .model import Base, Track
 from app.schemas.song import Song
 
 ### tracks saved in db should only store info about the song, exclduding personal match calculation
@@ -10,21 +11,10 @@ local_engine_url = "sqlite+pysqlite:///fret_companion.db"
 
 engine = create_engine(local_engine_url, echo=False)
 
-class Base(DeclarativeBase):
-    pass
-
-class Track(Base):
-    __tablename__ = "tracks"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    rec_mbid: Mapped[str | None] = mapped_column(String(36), unique=True)
-    track_name: Mapped[str] = mapped_column(String(255))
-    artist_name: Mapped[str] = mapped_column(String(255))
-    analysis: Mapped[dict] = mapped_column(JSON)
-
 Base.metadata.create_all(engine)
 
 def get_track(session: Session, song: Song):
+    existing_track = None
     # check if mbid exists
     if song.rec_mbid is not None:
         existing_track = session.scalar(
@@ -32,17 +22,16 @@ def get_track(session: Session, song: Song):
                 Track.rec_mbid == song.rec_mbid
             )
         )
-        return existing_track
+    if existing_track is not None: return existing_track
 
     # check if track and artist name in db
-    else: 
-        existing_track = session.scalar(
-            select(Track).where(
-                func.lower(func.trim(Track.track_name)) == song.song_name.strip().lower(),
-                func.lower(func.trim(Track.artist_name)) == song.artist_name.strip().lower()
-            )
+    existing_track = session.scalar(
+        select(Track).where(
+            func.lower(func.trim(Track.track_name)) == song.song_name.strip().lower(),
+            func.lower(func.trim(Track.artist_name)) == song.artist_name.strip().lower()
         )
-        return existing_track
+    )
+    return existing_track
 
 def save_track(song: Song):
     analysis_data = (
@@ -69,6 +58,7 @@ def load_track(song: Song) -> Song | None:
         if not track: return None # track not in db
 
         return Song.model_validate({
+            "id": track.id,
             "rec_mbid": track.rec_mbid,
             "artist_name": track.artist_name,
             "song_name": track.track_name,
@@ -84,6 +74,21 @@ def load_tracks(songs: list[Song]) -> list[Song] | None:
         if None in tracks: return None # at least 1 song not in db
 
         return [Song.model_validate({
+            "id": track.id,
+            "rec_mbid": track.rec_mbid,
+            "artist_name": track.artist_name,
+            "song_name": track.track_name,
+            "match": None,
+            "analysis": track.analysis
+        }) for track in tracks]
+
+def load_tracks_with_id(track_ids: list[int]) -> list[Song]:
+    with Session(engine) as session:
+
+        tracks = [session.get(Track, id) for id in track_ids]
+
+        return [Song.model_validate({
+            "id": track.id,
             "rec_mbid": track.rec_mbid,
             "artist_name": track.artist_name,
             "song_name": track.track_name,
