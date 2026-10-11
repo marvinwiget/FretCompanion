@@ -114,25 +114,11 @@ main {
     gap: 0.8rem;
 }
 
-.chord-row {
-    display: grid;
-    grid-template-columns: minmax(130px, 1fr) 3fr auto;
-    gap: 0.8rem;
-    align-items: center;
-    padding: 0.8rem;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #fff;
-}
-
-.chord-label {
-    font-weight: 700;
-}
-
 .chord-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
 }
 
 .chord-choice {
@@ -140,7 +126,7 @@ main {
     cursor: pointer;
 }
 
-.chord-choice input, .select-all input {
+.chord-choice input {
     position: absolute;
     opacity: 0;
     pointer-events: none;
@@ -148,8 +134,8 @@ main {
 
 .chord-choice span {
     display: inline-flex;
-    min-width: 42px;
-    min-height: 38px;
+    min-width: 48px;
+    min-height: 48px;
     align-items: center;
     justify-content: center;
     padding: 0.35rem 0.55rem;
@@ -171,9 +157,11 @@ main {
 }
 
 .select-all {
-    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
     cursor: pointer;
-    color: var(--muted);
+    color: var(--ink);
     font-size: 0.82rem;
     white-space: nowrap;
 }
@@ -236,20 +224,6 @@ select {
 @media (max-width: 700px) {
     main {
         margin-top: 2rem;
-    }
-
-    .chord-row {
-        grid-template-columns: 1fr auto;
-    }
-
-    .chord-buttons {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
-
-    .select-all {
-        grid-column: 2;
-        grid-row: 1;
     }
 
     .choice-grid.preference-grid {
@@ -344,30 +318,10 @@ select {
     padding: 0 1rem 1rem;
 }
 
-.chord-buttons {
-    gap: 0.6rem;
-    margin-bottom: 0.8rem;
-}
-
-.chord-choice span {
-    min-width: 48px;
-    min-height: 48px;
-}
-
 .select-all input {
-    position: static;
-    opacity: 1;
-    pointer-events: auto;
     width: 20px;
     height: 20px;
     accent-color: var(--green);
-}
-
-.select-all {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--ink);
 }
 
 .select-all input:checked + span {
@@ -380,25 +334,95 @@ select {
     margin: 0.5rem 0.25rem 0 0;
 }
 
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-}
-
 summary:focus-visible, select:focus-visible {
     outline: 3px solid var(--copper);
     outline-offset: 3px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        transition: none !important;
-    }
+/* Optional chord controls and visible selection feedback. */
+
+[hidden] {
+    display: none !important;
+}
+
+.accidental-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+
+.accidental-toggle input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--green);
+}
+
+.selected-heading {
+    margin: 1rem 0 0;
+    font-size: 1rem;
+}
+
+.selected-chords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.selected-chord {
+    min-height: 44px;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    background: var(--green-soft);
+    color: var(--green);
+    font: inherit;
+    cursor: pointer;
+}
+
+.selected-chord:hover {
+    background: var(--green);
+    color: white;
+}
+
+.selected-chord:focus-visible, .accidental-toggle input:focus-visible {
+    outline: 3px solid var(--copper);
+    outline-offset: 3px;
+}
+
+.chord-builder {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.chord-builder summary {
+    padding-block: 0.5rem;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.builder-fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+}
+
+.builder-fields label {
+    flex: 1 1 130px;
+}
+
+.builder-fields select {
+    margin-top: 0.3rem;
+}
+
+#chord-builder-status {
+    color: var(--green);
+    margin-bottom: 0;
 }

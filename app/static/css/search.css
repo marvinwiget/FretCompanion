@@ -74,10 +74,6 @@ input:focus-visible, select:focus-visible {
     font-weight: 600;
 }
 
-.range-field[hidden] {
-    display: none;
-}
-
 /* Page actions */
 
 .actions {
@@ -193,7 +189,7 @@ input:focus-visible, select:focus-visible {
     overflow-wrap: anywhere;
 }
 
-.song-details .summary {
+.song-details .wide-detail {
     grid-column: 1/-1;
 }
 
@@ -231,7 +227,7 @@ input:focus-visible, select:focus-visible {
         grid-template-columns: 1fr;
     }
 
-    .song-details .summary {
+    .song-details .wide-detail {
         grid-column: auto;
     }
 
@@ -304,4 +300,119 @@ input:focus-visible, select:focus-visible {
     border: 1px solid currentColor;
     border-radius: 6px;
     font-size: 0.8rem;
+}
+
+/* Track details use native disclosure controls; no JavaScript needed. */
+
+.track-overview, .analysis-note, .save-note {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.track-disclosure summary {
+    width: fit-content;
+    min-height: 44px;
+    padding: 0.6rem 0;
+    cursor: pointer;
+    color: var(--green);
+    font-weight: 650;
+}
+
+.track-disclosure summary:focus-visible {
+    outline: 3px solid #a6c4b3;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+.track-disclosure .hide-details,
+.track-disclosure[open] .show-details {
+    display: none;
+}
+
+.track-disclosure[open] .hide-details {
+    display: inline;
+}
+
+.track-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.track-save:disabled {
+    background: var(--green-soft);
+    color: var(--muted);
+    border: 1px solid var(--line);
+    cursor: not-allowed;
+}
+
+/* External tab search, kept separate from the song's save action. */
+
+.track-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.track-footer .track-actions {
+    flex: 1 1 120px;
+    min-width: 0;
+    margin: 0;
+}
+
+.track-footer .ug-link {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.ug-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 48px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #d9ac38;
+    border-radius: 10px;
+    background: #fff4cc;
+    color: #302816;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.ug-link:hover {
+    background: #ffe69b;
+    border-color: #9c7315;
+}
+
+.ug-link:focus-visible {
+    outline: 3px solid var(--green);
+    outline-offset: 3px;
+}
+
+.ug-badge {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    background: #302816;
+    color: #ffda65;
+    font-size: 0.8rem;
+    letter-spacing: -0.04em;
+}
+
+.ug-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+}
+
+.song-top > div:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
