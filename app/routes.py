@@ -1,5 +1,5 @@
 # flask --app app/routes run
-from flask import Flask, request, render_template, session
+from flask import Flask, request, render_template, session, redirect, url_for, jsonify
 from pydantic import ValidationError
 import secrets
 import time
@@ -11,7 +11,7 @@ from .schemas.song import Song
 from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
 from .helper.chords import get_roots, get_chord_types
-from .database.session import save_track, load_track, load_tracks
+import app.database.session as db
 
 from .exceptions import GuitarProfileInvalid, LBUserNotFound, LBUnavailable, NoUserActivity
 
@@ -51,11 +51,11 @@ def search():
                 raw_songs = get_latest_songs(username, count=count)
 
                 for raw_song in raw_songs:
-                    metadata = raw_song["track_metadata"] # wont work with top songs -> different json return
-                                    #pprint.pprint(metadata)
+                    metadata = raw_song["track_metadata"]
                     
                     songs_batch.append(Song(
-                        rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if "mbid_mapping" in metadata.keys() else None,
+                        rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if ("mbid_mapping" in metadata and 
+                                                                                "recording_mbid" in metadata["mbid_mapping"]) else None,
                         artist_name=metadata["artist_name"],
                         song_name=metadata["track_name"]
                         )
@@ -77,7 +77,7 @@ def search():
 
             #pprint.pprint(raw_songs)
             
-            needs_analysis = [s for s in songs_batch if load_track(s) is None] # make it a set so the same song doesnt get analysed twice
+            needs_analysis = [s for s in songs_batch if db.load_track(s) is None] # make it a set so the same song doesnt get analysed twice
             unique_needs_analysis = []
             for s in needs_analysis:
                 if s in unique_needs_analysis: continue
@@ -88,13 +88,17 @@ def search():
             if needs_analysis:
                 analysed_batch = get_songs_analysis(needs_analysis)
 
+                assert len(analysed_batch) == len(needs_analysis)
+
                 for song, analysis in zip(needs_analysis, analysed_batch):
                     song.analysis = analysis
-                    save_track(song=song)
+                    db.save_track(song=song)
 
-            params["eva_songs"] = load_tracks([s for s in songs_batch])
+            params["eva_songs"] = db.load_tracks([s for s in songs_batch])
 
             evaluate_match(songs=params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
+
+            session["last_searched_ids"] = [track.id for track in params["eva_songs"]]
 
             end_time = time.time()
             print(f"Total time elapsed: {end_time - start_time:.2f} seconds")
@@ -108,6 +112,10 @@ def search():
             params["recent_activity"] = False
         except GuitarProfileInvalid:
             params["profile_submitted"] = False
+
+    if session.get("last_searched_ids") is not None:
+        params["eva_songs"] = db.load_tracks_with_id(session["last_searched_ids"])
+        evaluate_match(params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
 
     return render_template("search.html", params=params)
 
@@ -139,3 +147,29 @@ def profile():
 
     return render_template("profile.html", params=params)
 
+@app.route("/tracks/<int:track_id>/toggle-save", methods=["POST"])
+def toggle_saved_track(track_id: int):
+    saved_tracks = session.get("saved_tracks", [])
+
+    if track_id in saved_tracks:
+        saved_tracks.remove(track_id)
+    else:
+        saved_tracks.append(track_id)
+
+    session["saved_tracks"] = saved_tracks
+
+    if request.accept_mimetypes.best == "application/json":
+        return jsonify(saved=track_id in saved_tracks)
+
+    return redirect(url_for("search"), code=303)
+
+@app.route("/saved-tracks")
+def saved_tracks():
+    saved_tracks_id = session.get("saved_tracks", [])
+    if saved_tracks_id and session.get("guitar_profile"):
+        saved_tracks = db.load_tracks_with_id(saved_tracks_id)
+        evaluate_match(songs=saved_tracks, user=GuitarProfile.model_validate(session["guitar_profile"]))
+    else:
+        saved_tracks = [] # empty list will result in no results, and site will not crash
+
+    return render_template("saved-tracks.html", saved_tracks=saved_tracks)
