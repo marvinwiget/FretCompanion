@@ -16,11 +16,11 @@ def evaluate_match(songs: list[Song], user: GuitarProfile):
 
         # calculate match for each song based on weights
         song.match = 100 - (
-            20 * w_diff +
+            30 * w_diff +
             20 * w_style + 
-            40 * w_chords +
-            0 * w_tech + 
-            20 * w_tuning
+            30 * w_chords +
+            10 * w_tech + 
+            10 * w_tuning
         )
         song.match += 20 * w_learn # if there are chords in song the user wants to learn, increase match
         song.match = round(song.match) # match should be an int
@@ -46,17 +46,17 @@ def get_diff_weight(s: SongAnalysis, user: GuitarProfile) -> float:
 
 def get_style_weight(s: SongAnalysis, user: GuitarProfile) -> float:
 
-    if user.solo_preference == "Rhythm":
-        if s.solo_style == "Rhythm": return 0
-        if s.solo_style == "Balanced": return 0.5
+    if user.playing_style_preference == "Rhythm":
+        if s.playing_style == "Rhythm": return 0
+        if s.playing_style == "Balanced": return 0.5
         return 1
-    if user.solo_preference == "Lead":
-        if s.solo_style == "Lead": return 0
-        if s.solo_style == "Balanced": return 0.5
+    if user.playing_style_preference == "Lead":
+        if s.playing_style == "Lead": return 0
+        if s.playing_style == "Balanced": return 0.5
         return 1
 
-    if user.solo_preference == "Balanced":
-        if s.solo_style == "Balanced": return 0
+    if user.playing_style_preference == "Balanced":
+        if s.playing_style == "Balanced": return 0
         return 0.5
 
     return 0 # case: user is indifferent 
@@ -72,10 +72,10 @@ def get_chords_weight(s: SongAnalysis, user: GuitarProfile) -> float:
     return 1 - (n_available_chords / n_req_chords) # e.g. if all required chords from the song are learned, return 0
 
 def get_technique_weight(s: SongAnalysis, user: GuitarProfile) -> float: 
-    n_req_tech = len(s.techniques)
+    n_req_tech = len(s.main_techniques)
     n_available_tech = 0
 
-    for tech in s.techniques:
+    for tech in s.main_techniques:
         if tech in user.techniques:
             n_available_tech += 1
 
@@ -83,8 +83,8 @@ def get_technique_weight(s: SongAnalysis, user: GuitarProfile) -> float:
 
 def get_tuning_weight(s: SongAnalysis, user: GuitarProfile) -> float:
 
-    if user.tuning_preferences == s.tuning: return 0 # matching tuning
-    elif user.tuning_preferences == "Indifferent": return 0 # indifferent to tuning
+    if user.tuning_preference == s.tuning: return 0 # matching tuning
+    elif user.tuning_preference == "Indifferent": return 0 # indifferent to tuning
     return 1 # unwanted tuning
 
 def get_learning_chords_weights(s: SongAnalysis, user: GuitarProfile) -> float: # this weight will be added (NOT SUBTRACTED)
