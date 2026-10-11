@@ -11,34 +11,107 @@ if (rangeField) {
     updateRange();
 }
 
-const total = document.getElementById("chord-total");
-function updateChordCount() {
-    if (total) {
-        const count = document.querySelectorAll('.chord-option:checked').length;
-        total.textContent = `${count} chord${count === 1 ? "" : "s"} selected`;
+// Chord selection stays in ordinary form checkboxes for Flask to receive.
+const picker = document.getElementById("chord-picker");
+if (picker) {
+    const showAccidentals = document.getElementById("show-accidentals");
+    const selectedList = document.getElementById("selected-chords");
+    const total = document.getElementById("chord-total");
+    const root = document.getElementById("chord-root");
+    const type = document.getElementById("chord-type");
+    const status = document.getElementById("chord-builder-status");
+    const groups = [...picker.querySelectorAll(".chord-group")];
+    const options = () => [...picker.querySelectorAll(".chord-option")];
+    const visibleOptions = (group) => [...group.querySelectorAll(".chord-option")]
+        .filter((input) => !input.closest("label").hidden);
+
+    function updateSelection() {
+        const selected = options().filter((input) => input.checked);
+        total.textContent = `${selected.length} chord${selected.length === 1 ? "" : "s"} selected`;
+        selectedList.replaceChildren();
+        selected.forEach((input) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "selected-chord";
+            button.textContent = `${input.value} ×`;
+            button.setAttribute("aria-label", `Remove ${input.value}`);
+            button.addEventListener("click", () => {
+                const index = [...selectedList.children].indexOf(button);
+                input.checked = false;
+                updateSelection();
+                // Keep keyboard focus near the removed chip.
+                const next = selectedList.children[index] || selectedList.lastElementChild;
+                (next || showAccidentals).focus();
+            });
+            selectedList.append(button);
+        });
+        if (selected.length === 0) selectedList.textContent = "No chords selected yet.";
+        groups.forEach((group) => {
+            const visible = visibleOptions(group);
+            const checked = visible.filter((input) => input.checked).length;
+            const selectAll = group.querySelector(".select-all-checkbox");
+            selectAll.checked = visible.length > 0 && checked === visible.length;
+            selectAll.indeterminate = checked > 0 && checked < visible.length;
+            const count = group.querySelectorAll(".chord-option:checked").length;
+            group.querySelector(".row-count").textContent = `${count} selected`;
+        });
     }
-}
-document.querySelectorAll(".chord-group").forEach((group) => {
-    const selectAll = group.querySelector(".select-all-checkbox");
-    const options = [...group.querySelectorAll(".chord-option")];
-    function syncRow() {
-        const count = options.filter((option) => option.checked).length;
-        selectAll.checked = count === options.length;
-        selectAll.indeterminate = count > 0 && count < options.length;
-        group.querySelector(".row-count").textContent = `${count} / ${options.length} selected`;
-        updateChordCount();
+
+    function updateVisibility() {
+        picker.querySelectorAll("[data-accidental]").forEach((label) => {
+            label.hidden = !showAccidentals.checked;
+        });
+        updateSelection();
     }
-    selectAll.addEventListener("change", () => {
-        options.forEach((option) => { option.checked = selectAll.checked; });
-        syncRow();
+
+    picker.addEventListener("change", (event) => {
+        if (event.target.matches(".chord-option")) updateSelection();
     });
-    options.forEach((option) => option.addEventListener("change", syncRow));
-    syncRow();
-});
-document.querySelectorAll(".retained-chord input").forEach((input) => {
-    input.addEventListener("change", updateChordCount);
-});
-updateChordCount();
+    groups.forEach((group) => {
+        group.querySelector(".select-all-checkbox").addEventListener("change", (event) => {
+            visibleOptions(group).forEach((input) => { input.checked = event.target.checked; });
+            updateSelection();
+        });
+    });
+    showAccidentals.addEventListener("change", updateVisibility);
+    function updatePreview() {
+        document.getElementById("chord-preview").textContent = root.value + type.value;
+        status.textContent = "";
+    }
+    root.addEventListener("change", updatePreview);
+    type.addEventListener("change", updatePreview);
+    document.getElementById("add-chord").addEventListener("click", () => {
+        const chord = root.value + type.value;
+        let input = options().find((option) => option.value === chord);
+        if (input?.checked) {
+            status.textContent = `${chord} is already selected.`;
+            return;
+        }
+        if (!input) {
+            const label = document.createElement("label");
+            label.className = "chord-choice retained-chord";
+            input = document.createElement("input");
+            input.type = "checkbox";
+            input.name = "chords";
+            input.value = chord;
+            input.className = "chord-option";
+            const text = document.createElement("span");
+            text.textContent = chord;
+            label.append(input, text);
+            document.getElementById("custom-chords").append(label);
+        }
+        input.checked = true;
+        updateSelection();
+        status.textContent = `${chord} added. Save your guitar profile to keep it.`;
+    });
+    document.getElementById("accidental-control").hidden = false;
+    document.getElementById("selected-chords-panel").hidden = false;
+    document.getElementById("chord-builder").hidden = false;
+    updatePreview();
+    updateVisibility();
+    // Restore counts after the browser restores form state via Back/Forward.
+    window.addEventListener("pageshow", updateVisibility);
+}
 
 // Keep the initial order so turning sorting off restores the search results.
 const sortButton = document.getElementById("sort-match");
@@ -87,3 +160,43 @@ if (sortButton && results) {
             : "Original track order restored.";
     });
 }
+
+// Save without navigating away from the search results.
+const saveForms = [...document.querySelectorAll(".save-track-form")];
+let savePending = false;
+saveForms.forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (savePending) return;
+
+        // Session cookies contain the entire list; avoid overlapping writes.
+        savePending = true;
+        saveForms.forEach((item) => { item.querySelector("button").disabled = true; });
+        const status = form.querySelector(".save-status");
+        status.textContent = "Saving…";
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                headers: { Accept: "application/json" },
+                body: new FormData(form),
+            });
+            if (!response.ok) throw new Error("Save request failed");
+            const result = await response.json();
+            if (typeof result.saved !== "boolean") throw new Error("Invalid save response");
+
+            // A recent-listen search can show the same track more than once.
+            saveForms.filter((item) => item.action === form.action).forEach((item) => {
+                const button = item.querySelector("button");
+                button.textContent = result.saved ? "Unsave" : "Save";
+                button.setAttribute("aria-pressed", String(result.saved));
+                item.querySelector(".save-status").textContent = result.saved ? "Saved." : "Removed.";
+            });
+        } catch (error) {
+            status.textContent = "Couldn’t confirm the change. Refresh to check its status.";
+        } finally {
+            savePending = false;
+            saveForms.forEach((item) => { item.querySelector("button").disabled = false; });
+        }
+    });
+});
