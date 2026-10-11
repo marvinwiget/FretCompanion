@@ -10,19 +10,9 @@ from .schemas.song import Song
 from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
 from .helper.chords import get_roots, get_chord_types
-from .db.session import save_track, load_track, load_tracks
-
+from .database.session import save_track, load_track, load_tracks
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
-
-user = GuitarProfile(
-    experience_level="Intermediate",
-    solo_preference="Indifferent",
-    techniques=["Fingerpicking", "Strumming"],
-    learned_chords=["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "Bm"],
-    in_training_chords=["FMaj7"],
-    tuning_preferences="EADGBE"
-)
 
 @app.route("/", methods=['GET'])
 def home():
@@ -83,13 +73,9 @@ def search():
 
             params["eva_songs"] = load_tracks([s for s in songs_batch])
 
-            try: 
-                profile_data= session.get("guitar_profile")
-                profile = GuitarProfile.model_validate(profile_data)
-                evaluate_match(songs=params["eva_songs"], user=profile)
-            except Exception as e:
-                print(e)
-                evaluate_match(songs=params["eva_songs"], user=user)
+            profile_data= session.get("guitar_profile")
+            profile = GuitarProfile.model_validate(profile_data)
+            evaluate_match(songs=params["eva_songs"], user=profile)
 
             end_time = time.time()
             print(f"Total time elapsed: {end_time - start_time:.2f} seconds")
@@ -114,19 +100,19 @@ def profile():
     }
     
     if request.method == "POST":
-        experience_level = request.form["experience"]
-        solo_type = request.form["solo_type"]
-        guitar_techniques = request.form.getlist("technique")
-        selected_chords = request.form.getlist("chords")
+        experience_level = request.form["experience_level"]
+        playing_style_preference = request.form["playing_style"]
+        techniques = request.form.getlist("techniques")
+        chords = request.form.getlist("chords")
         tuning_preference = request.form["tuning"]
 
         session["guitar_profile"] = GuitarProfile(
             experience_level=experience_level,
-            solo_preference=solo_type,
-            techniques=guitar_techniques,
-            learned_chords=selected_chords,
+            playing_style_preference=playing_style_preference,
+            techniques=techniques,
+            learned_chords=chords,
             in_training_chords=[],
-            tuning_preferences=tuning_preference
+            tuning_preference=tuning_preference
         ).model_dump(mode="json")
 
 
