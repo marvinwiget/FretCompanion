@@ -21,10 +21,11 @@ class SongAnalysisBatch(BaseModel):
     songs: list[SongAnalysis]
 
 class Song(BaseModel):
+    id: int | None = None
     rec_mbid: str | None = None
     song_name: str
     artist_name: str
-    match: int | None = Field(default=None, ge=0, le=100),
+    match: int | None = Field(default=None, ge=0, le=100)
     analysis: SongAnalysis | None = None
 
     def __eq__(self, other: object) -> bool:
