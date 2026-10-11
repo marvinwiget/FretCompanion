@@ -1,32 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-# add fields
+from .literals import Tuning, ExperienceLevel, PlayingStyle, Technique
 
-class Technique(BaseModel):
-    name: str
-    difficulty: int
 
 class SongAnalysis(BaseModel):
-    tuning: str
-    overall_difficulty: str # "Beginner" | "Intermediate" | "Advanced"
-    solo_style: str # "Rhythm" | "Lead" | "Balanced"
-    rhythm_difficulty: int
-    lead_difficulty: int
-    solo_difficulty: int
-    tempo_difficulty: int
+    tuning: Tuning
+    overall_difficulty: ExperienceLevel
+    playing_style: PlayingStyle
+    rhythm_difficulty: int = Field(ge=1, le=10)
+    lead_difficulty: int = Field(ge=1, le=10)
+    solo_difficulty: int = Field(ge=1, le=10)
+    tempo_difficulty: int = Field(ge=1, le=10)
     required_chords: list[str]
-    techniques: list[str]
+    main_techniques: list[Technique]
+    other_techniques: list[str]
     explanation: str
-    confidence: float
+    confidence: float = Field(ge=0, le=1)
 
-class SongAnalysisBATCH(BaseModel):
+class SongAnalysisBatch(BaseModel):
     songs: list[SongAnalysis]
 
 class Song(BaseModel):
     rec_mbid: str | None = None
     song_name: str
     artist_name: str
-    match: int | None = None # 0-100
+    match: int | None = Field(default=None, ge=0, le=100),
     analysis: SongAnalysis | None = None
 
     def __eq__(self, other: object) -> bool:
