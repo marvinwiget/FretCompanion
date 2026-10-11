@@ -63,6 +63,9 @@ def get_style_weight(s: SongAnalysis, user: GuitarProfile) -> float:
 
 def get_chords_weight(s: SongAnalysis, user: GuitarProfile) -> float:
     n_req_chords = len(s.required_chords)
+
+    if n_req_chords == 0: return 0
+
     n_available_chords = 0
 
     for chord in user.learned_chords:
