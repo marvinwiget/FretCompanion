@@ -1,4 +1,4 @@
-from sqlalchemy import String, create_engine, select, JSON
+from sqlalchemy import String, create_engine, select, JSON, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from app.schemas.song import Song
@@ -38,8 +38,8 @@ def get_track(session: Session, song: Song):
     else: 
         existing_track = session.scalar(
             select(Track).where(
-                Track.track_name.strip().casefold() == song.song_name.strip().casefold(),
-                Track.artist_name.strip().casefold() == song.artist_name.strip().casefold()
+                func.lower(func.trim(Track.track_name)) == song.song_name.strip().lower(),
+                func.lower(func.trim(Track.artist_name)) == song.artist_name.strip().lower()
             )
         )
         return existing_track
