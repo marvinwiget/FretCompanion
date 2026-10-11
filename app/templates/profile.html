@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guitar Profile | Fret Companion</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
-<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
 <body>
     {% set saved = session.get('guitar_profile') or {} %}
@@ -16,6 +16,7 @@
             <a href="/">Home</a>
             <a href="/guitar-profile" aria-current="page">Guitar Profile</a>
             <a href="/search">Search</a>
+            <a href="/saved-tracks">Saved</a>
         </nav>
     </header>
 
@@ -73,10 +74,21 @@
                 </div>
             </fieldset>
 
-            <section class="section" aria-labelledby="chords-heading">
+            <section class="section" id="chord-picker" aria-labelledby="chords-heading">
                 <h2 id="chords-heading" class="section-title">Chords you can play</h2>
                 <p class="section-hint chord-hint">Start with major and minor chords. Expand another chord type when you need it. Collapsing a group keeps your selections.</p>
-                <p id="chord-total" class="selection-count" aria-live="polite"></p>
+                {% set accidental_roots = ['C#', 'Db', 'D#', 'Eb', 'F#', 'Gb', 'G#', 'Ab', 'A#', 'Bb'] %}
+                <label class="accidental-toggle" id="accidental-control" hidden>
+                    <input type="checkbox" id="show-accidentals">
+                    Show sharps and flats
+                </label>
+                <p class="section-hint">Hiding sharps and flats keeps your selections. “Select all shown” affects only the visible chords.</p>
+                <div id="selected-chords-panel" hidden>
+                    <h3 class="selected-heading">Your selected chords</h3>
+                    <p id="chord-total" class="selection-count" aria-live="polite"></p>
+                    <div id="selected-chords" class="selected-chords"></div>
+                    <p class="section-hint">Use × to remove a chord. Save your guitar profile to keep these changes.</p>
+                </div>
                 <div class="chord-list">
                     {% set available = namespace(chords=[]) %}
                     {% for chord_type in params.chord_types %}
@@ -85,10 +97,10 @@
                         <fieldset class="chord-row">
                             <legend class="visually-hidden">{{ chord_type.label }} chords</legend>
                             <div class="chord-buttons">
-                                {% for root in params.roots %}
+                                {% for root in params.roots + accidental_roots %}
                                 {% set chord = root ~ chord_type.suffix %}
                                 {% set available.chords = available.chords + [chord] %}
-                                <label class="chord-choice">
+                                <label class="chord-choice" {% if root in accidental_roots %}data-accidental{% endif %}>
                                     <input type="checkbox" name="chords" value="{{ chord }}" class="chord-option" {% if chord in learned %}checked{% endif %}>
                                     <span>{{ chord }}</span>
                                 </label>
@@ -96,18 +108,46 @@
                             </div>
                             <label class="select-all">
                                 <input type="checkbox" class="select-all-checkbox">
-                                <span>Select all {{ chord_type.label|lower }} chords</span>
+                                <span>Select all shown {{ chord_type.label|lower }} chords</span>
                             </label>
                         </fieldset>
                     </details>
                     {% endfor %}
                 </div>
-                {% for chord in learned if chord not in available.chords %}
-                <label class="chord-choice retained-chord">
-                    <input type="checkbox" name="chords" value="{{ chord }}" class="chord-option" checked>
-                    <span>{{ chord }}</span>
-                </label>
-                {% endfor %}
+                <div id="custom-chords">
+                    {% for chord in learned if chord not in available.chords %}
+                    <label class="chord-choice retained-chord">
+                        <input type="checkbox" name="chords" value="{{ chord }}" class="chord-option" checked>
+                        <span>{{ chord }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <details class="chord-builder" id="chord-builder" hidden>
+                    <summary>Add another chord (optional)</summary>
+                    <p class="section-hint">Choose a root and a type. Existing selections won’t be added twice.</p>
+                    <div class="builder-fields">
+                        <label for="chord-root">Root
+                            <select id="chord-root">
+                                {% for root in ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'] %}
+                                <option value="{{ root }}">{{ root }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label for="chord-type">Type
+                            <select id="chord-type">
+                                {% for chord_type in params.chord_types %}
+                                <option value="{{ chord_type.suffix }}">{{ chord_type.label }}</option>
+                                {% endfor %}
+                                {% for suffix in ['add9', 'madd9', '6', 'm6', '9', 'maj9', 'm9', 'dim', 'dim7', 'aug'] %}
+                                <option value="{{ suffix }}">{{ suffix }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <button class="save-button" id="add-chord" type="button">Add <span id="chord-preview">C</span></button>
+                    </div>
+                    <p id="chord-builder-status" role="status" aria-live="polite"></p>
+                </details>
+                <noscript><p>All chord roots are shown. Enable JavaScript to use the optional builder and selection summary.</p></noscript>
             </section>
 
             <fieldset class="section">
