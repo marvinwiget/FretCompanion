@@ -31,7 +31,7 @@
             <form action="/search" method="POST">
                 <div class="field spaced-field">
                     <label for="username">ListenBrainz username</label>
-                    <input id="username" type="text" name="username" autocomplete="username" placeholder="e.g. marvin" required>
+                    <input id="username" type="text" name="username" autocomplete="username" placeholder="e.g. marviin" required>
                 </div>
 
                 <div class="field spaced-field">
@@ -99,7 +99,7 @@
                     <div><dt>Difficulty</dt><dd>{{ song.analysis.overall_difficulty }}</dd></div>
                     <div><dt>Tuning</dt><dd>{{ song.analysis.tuning }}</dd></div>
                     <div><dt>Chords</dt><dd>{{ song.analysis.required_chords|join(", ") }}</dd></div>
-                    <div><dt>Techniques</dt><dd>{{ song.analysis.techniques|join(", ") }}</dd></div>
+                    <div><dt>Techniques</dt><dd>{{ song.analysis.main_techniques|join(", ") }}</dd></div>
                     <div class="summary"><dt>Song notes</dt><dd>{{ song.analysis.explanation }}</dd></div>
                 </dl>
                 {% else %}

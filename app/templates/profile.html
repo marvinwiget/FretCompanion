@@ -33,15 +33,15 @@
                 <p class="section-hint">Choose the level that best describes where you are now.</p>
                 <div class="choice-grid">
                     <label class="choice">
-                        <input type="radio" name="experience" value="Beginner" {% if saved.get("experience_level", "Beginner") == "Beginner" %}checked{% endif %}>
+                        <input type="radio" name="experience_level" value="Beginner" {% if saved.get("experience_level", "Beginner") == "Beginner" %}checked{% endif %}>
                         <span>Beginner</span>
                     </label>
                     <label class="choice">
-                        <input type="radio" name="experience" value="Intermediate" {% if saved.get("experience_level", "Beginner") == "Intermediate" %}checked{% endif %}>
+                        <input type="radio" name="experience_level" value="Intermediate" {% if saved.get("experience_level", "Beginner") == "Intermediate" %}checked{% endif %}>
                         <span>Intermediate</span>
                     </label>
                     <label class="choice">
-                        <input type="radio" name="experience" value="Advanced" {% if saved.get("experience_level", "Beginner") == "Advanced" %}checked{% endif %}>
+                        <input type="radio" name="experience_level" value="Advanced" {% if saved.get("experience_level", "Beginner") == "Advanced" %}checked{% endif %}>
                         <span>Advanced</span>
                     </label>
                 </div>
@@ -53,7 +53,7 @@
                 <div class="choice-grid preference-grid">
                     {% for value, label in [("Rhythm", "Rhythm"), ("Lead", "Lead"), ("Balanced", "A bit of both"), ("Indifferent", "No preference")] %}
                     <label class="choice">
-                        <input type="radio" name="solo_type" value="{{ value }}" {% if value == saved.get("solo_preference", "Indifferent") %}checked{% endif %}>
+                        <input type="radio" name="playing_style" value="{{ value }}" {% if value == saved.get("playing_style_preference", "Indifferent") %}checked{% endif %}>
                         <span>{{ label }}</span>
                     </label>
                     {% endfor %}
@@ -66,7 +66,7 @@
                 <div class="technique-grid">
                     {% for technique in ["Fingerpicking", "Strumming", "Hammer-on", "Pull-off", "Bending", "Slides", "Palm muting", "Tapping"] %}
                     <label class="choice technique-choice">
-                        <input type="checkbox" name="technique" value="{{ technique }}" {% if technique in saved.get("techniques", []) %}checked{% endif %}>
+                        <input type="checkbox" name="techniques" value="{{ technique }}" {% if technique in saved.get("techniques", []) %}checked{% endif %}>
                         <span>{{ technique }}</span>
                     </label>
                     {% endfor %}
@@ -117,19 +117,21 @@
                     <label for="tuning">Preferred tuning</label>
                     <select id="tuning" name="tuning">
                         {% set tunings = [
-                            ('Standard', 'Standard — E A D G B E'),
-                            ('Indifferent', 'No preference'),
-                            ('Drop D', 'Drop D — D A D G B E'),
-                            ('Half-step down', 'Half-step down — E♭ A♭ D♭ G♭ B♭ E♭'),
-                            ('D Standard', 'D standard — D G C F A D'),
-                            ('Drop C', 'Drop C — C G C F A D'),
-                            ('Open G', 'Open G — D G D G B D'),
-                            ('Open D', 'Open D — D A D F♯ A D'),
-                            ('Open E', 'Open E — E B E G♯ B E'),
-                            ('Open A', 'Open A — E A E A C♯ E'),
-                            ('DADGAD', 'DADGAD — D A D G A D')
+                            ('EADGBE', 'Standard — E A D G B E'),
+                            ('DADGBE', 'Drop D — D A D G B E'),
+                            ('EbAbDbGbBbEb', 'Half-step down — E♭ A♭ D♭ G♭ B♭ E♭'),
+                            ('DGCFAD', 'D standard — D G C F A D'),
+                            ('CGCFAD', 'Drop C — C G C F A D'),
+                            ('DGDGBD', 'Open G — D G D G B D'),
+                            ('DADF#AD', 'Open D — D A D F♯ A D'),
+                            ('EBEG#BE', 'Open E — E B E G♯ B E'),
+                            ('EAEAC#E', 'Open A — E A E A C♯ E'),
+                            ('DADGAD', 'DADGAD — D A D G A D'),
+                            ('Indifferent', 'I’m fine with anything'),
+                            ('Other', 'Another tuning'),
+                            ('Unknown', 'I don’t know my tuning')
                         ] %}
-                        {% set selected_tuning = saved.get('tuning_preferences', 'Standard') %}
+                        {% set selected_tuning = saved.get('tuning_preference', 'EADGBE') %}
                         {% for value, label in tunings %}
                         <option value="{{ value }}" {% if selected_tuning == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
