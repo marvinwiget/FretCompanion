@@ -6,7 +6,7 @@ import time
 import pprint
 
 from .api.listenbrainz_api import get_latest_songs, get_top_songs
-from .api.song_analysis import get_songs_analysis
+from .api.song_analysis import analyize_songs
 from .schemas.song import Song
 from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
@@ -40,7 +40,7 @@ def search():
         count = request.form["count"]
         result_type = request.form["result_type"]
         time_range = request.form["time_range"]
-        songs_batch = []
+        all_tracks = []
         raw_songs = []
 
         try: 
@@ -53,7 +53,7 @@ def search():
                 for raw_song in raw_songs:
                     metadata = raw_song["track_metadata"]
                     
-                    songs_batch.append(Song(
+                    all_tracks.append(Song(
                         rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if ("mbid_mapping" in metadata and 
                                                                                 "recording_mbid" in metadata["mbid_mapping"]) else None,
                         artist_name=metadata["artist_name"],
@@ -66,7 +66,7 @@ def search():
                 params["result_type"] = "top_songs"
 
                 for raw_song in raw_songs:
-                    songs_batch.append(Song(
+                    all_tracks.append(Song(
                         rec_mbid=raw_song["recording_mbid"] if "recording_mbid" in raw_song.keys() else None,
                         artist_name=raw_song["artist_name"],
                         song_name=raw_song["track_name"]
@@ -74,10 +74,8 @@ def search():
                     )
 
             if not raw_songs: params["recent_activity"] = False # no recent activity found for user
-
-            #pprint.pprint(raw_songs)
             
-            needs_analysis = [s for s in songs_batch if db.load_track(s) is None] # make it a set so the same song doesnt get analysed twice
+            needs_analysis = [s for s in all_tracks if db.load_track(s) is None] # make it a set so the same song doesnt get analysed twice
             unique_needs_analysis = []
             for s in needs_analysis:
                 if s in unique_needs_analysis: continue
@@ -86,15 +84,10 @@ def search():
             needs_analysis = unique_needs_analysis
             
             if needs_analysis:
-                analysed_batch = get_songs_analysis(needs_analysis)
+                analyize_songs(needs_analysis)
+                db.save_tracks(needs_analysis)
 
-                assert len(analysed_batch) == len(needs_analysis)
-
-                for song, analysis in zip(needs_analysis, analysed_batch):
-                    song.analysis = analysis
-                    db.save_track(song=song)
-
-            params["eva_songs"] = db.load_tracks([s for s in songs_batch])
+            params["eva_songs"] = db.load_tracks([s for s in all_tracks])
 
             evaluate_match(songs=params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
 
