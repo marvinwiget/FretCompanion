@@ -1,14 +1,15 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+import json
 import time
 load_dotenv()
 
-from app.schemas.song import Song, SongAnalysisBatch
+from app.schemas.song import Song, SongAnalysis
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-def get_prompt(songs):
+def get_prompt(songs: list[Song]):
     all_songs = "\n".join(f"{song.song_name} - {song.artist_name}" for song in songs)
 
     return f"""
@@ -180,7 +181,7 @@ For multiple input songs, include one object per input in the "songs" array.
 }}
 """
 
-def get_songs_analysis(songs: list[Song]):
+def analyize_songs(songs: list[Song]):
     start_time = time.time()
     print(f"{time.strftime("%H:%M:%S", time.gmtime())}: start analyzing songs")
 
@@ -192,11 +193,20 @@ def get_songs_analysis(songs: list[Song]):
         response_format={
                         "type": "text",
                         "mime_type": "application/json",
-                        "schema": SongAnalysisBatch.model_json_schema(),
+                        "schema": {
+                            "type": "array",
+                            "items": SongAnalysis.model_json_schema(),
+                          }
                         }
     )
     
     end_time = time.time()
     print(f"{time.strftime("%H:%M:%S", time.gmtime())}: finished analyzing songs in {end_time - start_time:.2f} seconds")
 
-    return (SongAnalysisBatch.model_validate_json(interaction.output_text)).songs
+    result = json.loads(interaction.output_text)
+
+    for song, analysis in zip(songs, result):
+        song.analysis = SongAnalysis.model_validate(analysis)
+
+    return True
+    #return (SongAnalysisBatch.model_validate_json(interaction.output_text)).songs
