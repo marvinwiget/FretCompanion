@@ -33,22 +33,24 @@ def get_track(session: Session, song: Song):
     )
     return existing_track
 
-def save_track(song: Song):
-    analysis_data = (
-        song.analysis.model_dump(mode="json")
-        if song.analysis is not None
-        else None
-    )
+def save_tracks(songs: list[Song]):
 
     with Session(engine) as session:
-        if get_track(session=session, song=song): return
+        for song in songs:
+            if get_track(session=session, song=song): continue # already exists in db
 
-        track = Track(rec_mbid=song.rec_mbid, 
-                      artist_name=song.artist_name,
-                      track_name=song.song_name,
-                      analysis=analysis_data
-                      )
-        session.add(track)
+            analysis_data = (
+                    song.analysis.model_dump(mode="json")
+                    if song.analysis is not None
+                    else None
+                )
+
+            track = Track(rec_mbid=song.rec_mbid, 
+                        artist_name=song.artist_name,
+                        track_name=song.song_name,
+                        analysis=analysis_data
+                        )
+            session.add(track)
         session.commit()
 
 def load_track(song: Song) -> Song | None:
