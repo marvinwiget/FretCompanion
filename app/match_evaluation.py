@@ -62,20 +62,16 @@ def get_style_weight(s: SongAnalysis, user: GuitarProfile) -> float:
     return 0 # case: user is indifferent 
 
 def get_chords_weight(s: SongAnalysis, user: GuitarProfile) -> float:
-    n_req_chords = len(s.required_chords)
+    required = set(s.required_chords)
+    if not required:
+        return 0
+    known = set(user.learned_chords)
+    return 1 - len(required & known) / len(required)
 
-    if n_req_chords == 0: return 0
-
-    n_available_chords = 0
-
-    for chord in user.learned_chords:
-        if chord in s.required_chords: 
-            n_available_chords += 1
-
-    return 1 - (n_available_chords / n_req_chords) # e.g. if all required chords from the song are learned, return 0
 
 def get_technique_weight(s: SongAnalysis, user: GuitarProfile) -> float: 
     n_req_tech = len(s.main_techniques)
+    if n_req_tech == 0: return 0
     n_available_tech = 0
 
     for tech in s.main_techniques:
