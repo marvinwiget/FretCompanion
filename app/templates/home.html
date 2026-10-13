@@ -1,23 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#18221f">
-    <title>Fret Companion | Find your next song to play</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-</head>
-<body>
-    <header class="header">
-        <a class="brand" href="/">Fret Companion</a>
-        <nav class="navbar" aria-label="Main navigation">
-            <a href="/" aria-current="page">Home</a>
-            <a href="/guitar-profile">Guitar Profile</a>
-            <a href="/search">Search</a>
-            <a href="/saved-tracks">Saved</a>
-        </nav>
-    </header>
-    <main>
+{% extends "base.html" %}
+{% block title %}Fret Companion | Find your next song to play{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">{% endblock %}
+
+{% block content %}
         <section class="hero">
             <div>
                 <p class="eyebrow">Your listening, your next guitar song</p>
@@ -38,6 +23,4 @@
                 <p class="note">A lower match can still be a great long-term goal. Use the score as a guide, not a limit.</p>
             </aside>
         </section>
-    </main>
-</body>
-</html>
+{% endblock %}

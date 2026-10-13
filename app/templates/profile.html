@@ -1,26 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guitar Profile | Fret Companion</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
-    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-</head>
-<body>
-    {% set saved = session.get('guitar_profile') or {} %}
-    {% set learned = saved.get('learned_chords', []) %}
-    <header class="header">
-        <a class="brand" href="/">Fret Companion</a>
-        <nav class="navbar" aria-label="Main navigation">
-            <a href="/">Home</a>
-            <a href="/guitar-profile" aria-current="page">Guitar Profile</a>
-            <a href="/search">Search</a>
-            <a href="/saved-tracks">Saved</a>
-        </nav>
-    </header>
+{% extends "base.html" %}
+{% block title %}Guitar Profile | Fret Companion{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>{% endblock %}
 
-    <main>
+{% block content %}
+        {% set saved = session.get('guitar_profile') or {} %}
+        {% set learned = saved.get('learned_chords', []) %}
         <section class="intro" aria-labelledby="page-title">
             <p class="eyebrow">Make it yours</p>
             <h1 id="page-title">Your guitar profile</h1>
@@ -187,8 +172,4 @@
                 <button class="save-button" type="submit">Save guitar profile</button>
             </div>
         </form>
-    </main>
-
-    
-</body>
-</html>
+{% endblock %}

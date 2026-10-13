@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#18221f">
+    <title>{% block title %}Fret Companion{% endblock %}</title>
+    {% block styles %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <a class="brand" href="{{ url_for('pages.home') }}">Fret Companion</a>
+        <nav class="navbar" aria-label="Main navigation">
+            {% for endpoint, label in [('pages.home', 'Home'), ('pages.profile', 'Guitar Profile'), ('pages.search', 'Search'), ('pages.saved_tracks', 'Saved')] %}
+            <a href="{{ url_for(endpoint) }}"{% if request.endpoint == endpoint %} aria-current="page"{% endif %}>{{ label }}</a>
+            {% endfor %}
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

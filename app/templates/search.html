@@ -1,25 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#18221f">
-    <title>Find songs | Fret Companion</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
-    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-</head>
-<body>
-    <header class="header">
-        <a class="brand" href="/">Fret Companion</a>
-        <nav class="navbar" aria-label="Main navigation">
-            <a href="/">Home</a>
-            <a href="/guitar-profile">Guitar Profile</a>
-            <a href="/search" aria-current="page">Search</a>
-            <a href="/saved-tracks">Saved</a>
-        </nav>
-    </header>
+{% extends "base.html" %}
+{% block title %}Find songs | Fret Companion{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>{% endblock %}
 
-    <main>
+{% block content %}
         <section class="intro" aria-labelledby="page-title">
             <p class="eyebrow">Your music, ready to play</p>
             <h1>Find your next guitar song</h1>
@@ -29,10 +13,10 @@
         <fieldset class="panel">
             <legend>Choose your listening sample</legend>
             <p class="panel-hint">Enter a ListenBrainz username and choose which tracks to explore.</p>
-            <form action="/search" method="POST">
+            <form id="search-form" action="/search" method="POST">
                 <div class="field spaced-field">
                     <label for="username">ListenBrainz username</label>
-                    <input id="username" type="text" name="username" autocomplete="username" placeholder="e.g. marviin" required>
+                    <input id="username" type="text" name="username" autocomplete="username" placeholder="e.g. marviin" value="{{ request.form.get('username', '') }}" required>
                 </div>
 
                 <div class="field spaced-field">
@@ -52,22 +36,24 @@
                 <div class="form-grid">
                     <div class="field">
                         <label for="count">Number of tracks</label>
-                        <input id="count" type="number" name="count" value="25" min="1" max="100" required>
+                        <input id="count" type="number" name="count" value="{{ request.form.get('count', '25') }}" min="1" max="100" required>
                     </div>
                     <div class="field range-field" id="time_range_field">
                         <label for="time_range">Top tracks time range</label>
                         <select id="time_range" name="time_range">
-                            <option value="week">Last week</option>
-                            <option value="month" selected>Last month</option>
-                            <option value="year">Last year</option>
-                            <option value="all_time">All time</option>
+                            {% for value, label in [('week', 'Last week'), ('month', 'Last month'), ('year', 'Last year'), ('all_time', 'All time')] %}
+                            <option value="{{ value }}" {% if request.form.get('time_range', 'month') == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
 
                 <div class="actions"><button class="button" type="submit">Find my songs</button></div>
 
-                {% if not params.user_found %}
+                <p id="search-progress" class="message info" role="status" hidden>Finding and analyzing your songs… This may take a moment.</p>
+                {% if params.error_message %}
+                <p class="message error" role="alert">{{ params.error_message }}</p>
+                {% elif not params.user_found %}
                 <p class="message error" role="alert">We couldn’t find that ListenBrainz user. Check the username and try again.</p>
                 {% elif not params.profile_submitted %}
                 <p class="message error" role="alert">Create your guitar profile first.</p>
@@ -75,9 +61,9 @@
             </form>
         </fieldset>
 
-        {% if not params.recent_activity and params.user_found %}
-        <p class="message info" role="status">No recent listening activity was found for this user.</p>
-        {% elif params.recent_activity and params.user_found and params.eva_songs %}
+        {% if not params.error_message and not params.recent_activity and params.user_found %}
+        <p class="message info" role="status">No listening data is available for this selection.</p>
+        {% elif not params.error_message and params.recent_activity and params.user_found and params.eva_songs %}
         <div class="results-toolbar">
             <h2 class="results-heading">Your songs <span class="results-count">({{ params.eva_songs|length }} tracks)</span></h2>
             <button class="button sort-button" id="sort-match" type="button" aria-controls="song-results" aria-pressed="false" hidden>Sort by highest match <span class="sort-state" aria-hidden="true">Off</span></button>
@@ -85,72 +71,8 @@
         <p id="sort-status" class="sort-status" role="status"></p>
         <section class="song-list" id="song-results" aria-label="Track recommendations">
             {% for song in params.eva_songs %}
-            <article class="song-card" data-match="{{ song.match if song.match is not none else '' }}">
-                <div class="song-top">
-                    <div>
-                        <h3 class="song-title">{{ song.song_name }}</h3>
-                        <p class="artist">{{ song.artist_name }}</p>
-                    </div>
-                    {% if song.match is not none %}<span class="match">{{ song.match }}% match</span>{% endif %}
-                </div>
-                {% if song.analysis %}
-                <p class="track-overview">{{ song.analysis.overall_difficulty }} · {{ song.analysis.playing_style }}</p>
-                <dl class="song-details">
-                    <div><dt>Tuning</dt><dd>{{ song.analysis.tuning }}</dd></div>
-                    <div><dt>Required chords</dt><dd>{{ song.analysis.required_chords|join(", ") or "None listed" }}</dd></div>
-                    <div><dt>Main techniques</dt><dd>{{ song.analysis.main_techniques|join(", ") or "None listed" }}</dd></div>
-                    <div><dt>Other techniques</dt><dd>{{ song.analysis.other_techniques|join(", ") or "None listed" }}</dd></div>
-                </dl>
-                <details class="track-disclosure">
-                    <summary>
-                        <span class="show-details">View guitar details</span>
-                        <span class="hide-details">Hide guitar details</span>
-                        <span class="visually-hidden"> for {{ song.song_name }}</span>
-                    </summary>
-                    <dl class="song-details">
-                        <div><dt>Playing style</dt><dd>{{ song.analysis.playing_style }}</dd></div>
-                        <div><dt>Rhythm difficulty</dt><dd>{{ song.analysis.rhythm_difficulty }} / 10</dd></div>
-                        <div><dt>Lead difficulty</dt><dd>{{ song.analysis.lead_difficulty }} / 10</dd></div>
-                        <div><dt>Solo difficulty</dt><dd>{{ song.analysis.solo_difficulty }} / 10</dd></div>
-                        <div><dt>Tempo difficulty</dt><dd>{{ song.analysis.tempo_difficulty }} / 10</dd></div>
-                        <div class="wide-detail"><dt>Song notes</dt><dd>{{ song.analysis.explanation }}</dd></div>
-                        <div class="wide-detail"><dt>AI-reported confidence</dt><dd>{{ (song.analysis.confidence * 100)|round|int }}% — an estimate, not verified accuracy.</dd></div>
-                    </dl>
-                    <p class="analysis-note">Difficulty runs from 1 (minimal) to 10 (very demanding). An absent part may be rated 1; check the song notes. Guitar requirements are AI estimates; your match is calculated by Python.</p>
-                </details>
-                {% else %}
-                <p class="message info">Guitar analysis is not available for this track yet.</p>
-                {% endif %}
-
-                {% set saved_ids = session.get('saved_tracks', []) %}
-                {% set is_saved = song.id in saved_ids %}
-
-                <div class="track-footer">
-                    <form class="track-actions save-track-form"
-                        action="{{ url_for('toggle_saved_track', track_id=song.id) }}"
-                        method="post">
-                        <button class="button track-save"
-                                type="submit"
-                                aria-pressed="{{ 'true' if is_saved else 'false' }}">
-                            {{ 'Unsave' if is_saved else 'Save' }}
-                        </button>
-                        <span class="save-status" role="status"></span>
-                    </form>
-                    <a class="ug-link"
-                       href="https://www.ultimate-guitar.com/search.php?{{ {'search_type': 'title', 'value': song.artist_name ~ ' ' ~ song.song_name}|urlencode }}"
-                       target="_blank" rel="noopener noreferrer"
-                       aria-label="Find {{ song.song_name }} by {{ song.artist_name }} on Ultimate Guitar (opens in a new tab)">
-                        <span>Find tabs<span class="ug-label">Ultimate Guitar</span></span>
-                        <span aria-hidden="true">↗</span>
-                    </a>
-                </div>
-
-            </article>
+            {% include "components/track_card.html" %}
             {% endfor %}
         </section>
         {% endif %}
-    </main>
-
-    
-</body>
-</html>
+{% endblock %}

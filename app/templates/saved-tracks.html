@@ -1,24 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#18221f">
-    <title>Fret Companion | Find your next song to play</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
-    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-</head>
-<body>
-    <header class="header">
-        <a class="brand" href="/">Fret Companion</a>
-        <nav class="navbar" aria-label="Main navigation">
-            <a href="/">Home</a>
-            <a href="/guitar-profile">Guitar Profile</a>
-            <a href="/search">Search</a>
-            <a href="/saved-tracks" aria-current="page">Saved</a>
-        </nav>
-    </header>
-    <main>
+{% extends "base.html" %}
+{% block title %}Fret Companion | Find your next song to play{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>{% endblock %}
+
+{% block content %}
         {% if not saved_tracks %}
         <p class="message info" role="status">No tracks have been saved.</p>
         {% else %}
@@ -29,70 +14,8 @@
         <p id="sort-status" class="sort-status" role="status"></p>
         <section class="song-list" id="song-results" aria-label="Track recommendations">
             {% for song in saved_tracks %}
-            <article class="song-card" data-match="{{ song.match if song.match is not none else '' }}">
-                <div class="song-top">
-                    <div>
-                        <h3 class="song-title">{{ song.song_name }}</h3>
-                        <p class="artist">{{ song.artist_name }}</p>
-                    </div>
-                    {% if song.match is not none %}<span class="match">{{ song.match }}% match</span>{% endif %}
-                </div>
-                {% if song.analysis %}
-                <p class="track-overview">{{ song.analysis.overall_difficulty }} · {{ song.analysis.playing_style }}</p>
-                <dl class="song-details">
-                    <div><dt>Tuning</dt><dd>{{ song.analysis.tuning }}</dd></div>
-                    <div><dt>Required chords</dt><dd>{{ song.analysis.required_chords|join(", ") or "None listed" }}</dd></div>
-                    <div><dt>Main techniques</dt><dd>{{ song.analysis.main_techniques|join(", ") or "None listed" }}</dd></div>
-                    <div><dt>Other techniques</dt><dd>{{ song.analysis.other_techniques|join(", ") or "None listed" }}</dd></div>
-                </dl>
-                <details class="track-disclosure">
-                    <summary>
-                        <span class="show-details">View guitar details</span>
-                        <span class="hide-details">Hide guitar details</span>
-                        <span class="visually-hidden"> for {{ song.song_name }}</span>
-                    </summary>
-                    <dl class="song-details">
-                        <div><dt>Playing style</dt><dd>{{ song.analysis.playing_style }}</dd></div>
-                        <div><dt>Rhythm difficulty</dt><dd>{{ song.analysis.rhythm_difficulty }} / 10</dd></div>
-                        <div><dt>Lead difficulty</dt><dd>{{ song.analysis.lead_difficulty }} / 10</dd></div>
-                        <div><dt>Solo difficulty</dt><dd>{{ song.analysis.solo_difficulty }} / 10</dd></div>
-                        <div><dt>Tempo difficulty</dt><dd>{{ song.analysis.tempo_difficulty }} / 10</dd></div>
-                        <div class="wide-detail"><dt>Song notes</dt><dd>{{ song.analysis.explanation }}</dd></div>
-                        <div class="wide-detail"><dt>AI-reported confidence</dt><dd>{{ (song.analysis.confidence * 100)|round|int }}% — an estimate, not verified accuracy.</dd></div>
-                    </dl>
-                    <p class="analysis-note">Difficulty runs from 1 (minimal) to 10 (very demanding). An absent part may be rated 1; check the song notes. Guitar requirements are AI estimates; your match is calculated by Python.</p>
-                </details>
-                {% else %}
-                <p class="message info">Guitar analysis is not available for this track yet.</p>
-                {% endif %}
-
-                {% set saved_ids = session.get('saved_tracks', []) %}
-                {% set is_saved = song.id in saved_ids %}
-
-                <div class="track-footer">
-                    <form class="track-actions save-track-form"
-                        action="{{ url_for('toggle_saved_track', track_id=song.id) }}"
-                        method="post">
-                        <button class="button track-save"
-                                type="submit"
-                                aria-pressed="{{ 'true' if is_saved else 'false' }}">
-                            {{ 'Unsave' if is_saved else 'Save' }}
-                        </button>
-                        <span class="save-status" role="status"></span>
-                    </form>
-                    <a class="ug-link"
-                       href="https://www.ultimate-guitar.com/search.php?{{ {'search_type': 'title', 'value': song.artist_name ~ ' ' ~ song.song_name}|urlencode }}"
-                       target="_blank" rel="noopener noreferrer"
-                       aria-label="Find {{ song.song_name }} by {{ song.artist_name }} on Ultimate Guitar (opens in a new tab)">
-                        <span>Find tabs<span class="ug-label">Ultimate Guitar</span></span>
-                        <span aria-hidden="true">↗</span>
-                    </a>
-                </div>
-
-            </article>
+            {% include "components/track_card.html" %}
             {% endfor %}
         </section>
         {% endif %}
-    </main>
-</body>
-</html>
+{% endblock %}

@@ -200,3 +200,32 @@ saveForms.forEach((form) => {
         }
     });
 });
+
+// Give immediate feedback while the normal search POST is running.
+const searchForm = document.getElementById("search-form");
+if (searchForm) {
+    const searchButton = searchForm.querySelector('button[type="submit"]');
+    const progress = document.getElementById("search-progress");
+    const originalLabel = searchButton.textContent;
+    let searching = false;
+    searchForm.addEventListener("submit", (event) => {
+        if (searching) {
+            event.preventDefault();
+            return;
+        }
+        searching = true;
+        searchButton.disabled = true;
+        searchButton.textContent = "Searching…";
+        searchForm.setAttribute("aria-busy", "true");
+        searchForm.querySelectorAll('[role="alert"]').forEach((message) => { message.hidden = true; });
+        progress.hidden = false;
+    });
+    window.addEventListener("pageshow", () => {
+        searching = false;
+        searchButton.disabled = false;
+        searchButton.textContent = originalLabel;
+        searchForm.removeAttribute("aria-busy");
+        progress.hidden = true;
+        searchForm.querySelectorAll('[role="alert"]').forEach((message) => { message.hidden = false; });
+    });
+}
