@@ -17,9 +17,6 @@ class SongAnalysis(BaseModel):
     explanation: str
     confidence: float = Field(ge=0, le=1)
 
-class SongAnalysisBatch(BaseModel):
-    songs: list[SongAnalysis]
-
 class Song(BaseModel):
     id: int | None = None
     rec_mbid: str | None = None
