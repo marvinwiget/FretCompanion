@@ -1,12 +1,15 @@
-Run from the project root with your virtual environment activated:
+# Tests
+
+Run from the repository root with the virtual environment active:
 
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m pytest tests -v
+node --test tests/test_search_loading.cjs
 ```
 
-The fixtures in `conftest.py` create fresh sample models for each test. Tests cover scoring, model validation, song identity, and ListenBrainz clients with fake HTTP responses. They do not need an API key or modify the local database.
+`conftest.py` uses `create_app()` to create a fresh application with a test signing key and a temporary SQLite database for each test that needs it. The fixture also provides an application context for track queries. No import-time database patching is needed.
 
-Two regression tests currently expose scoring bugs: no required techniques causes division by zero, and duplicate known chords inflate compatibility. These tests express the intended behavior and should pass after those bugs are fixed. They are deliberately not skipped or marked as expected failures.
+HTTP requests are blocked unless explicitly mocked. Provider tests import `app.integrations`; route tests replace the provider functions used by `app.services.search`. No real API keys, paid requests, or application database access are required.
 
-The existing empty `test_database.py` and `test_routes.py` files are left for future integration tests. Use a temporary database for those, rather than `fret_companion.db`.
+Tests cover scoring, schema validation, song identity, ListenBrainz HTTP and payload failures, AI transport and batch validation, search error messages, result restoration, session bookmarks, session signing, and database round trips. JavaScript tests exercise search loading and browser-history restoration with a minimal DOM stub.
