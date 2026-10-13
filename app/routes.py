@@ -1,28 +1,30 @@
-# flask --app app/routes run
-from flask import Flask, request, render_template, session, redirect, url_for, jsonify
+from flask import Blueprint, current_app, request, render_template, session, redirect, url_for, jsonify
 from pydantic import ValidationError
-import secrets
 import time
-import pprint
 
-from .api.listenbrainz_api import get_latest_songs, get_top_songs
-from .api.song_analysis import analyize_songs
-from .schemas.song import Song
+from .services import search as search_service
 from .schemas.profile import GuitarProfile
 from .match_evaluation import evaluate_match
 from .helper.chords import get_roots, get_chord_types
-import app.database.session as db
+from .database import tracks as db
+from .exceptions import (GuitarProfileInvalid, LBUserNotFound, LBUnavailable,
+                         NoUserActivity, AnalysisUnavailable, InvalidAnalysisResponse)
 
-from .exceptions import GuitarProfileInvalid, LBUserNotFound, LBUnavailable, NoUserActivity
+pages = Blueprint("pages", __name__)
 
-app = Flask(__name__)
-app.secret_key = secrets.token_hex()
 
-@app.route("/", methods=['GET'])
+def read_guitar_profile() -> GuitarProfile:
+    try:
+        return GuitarProfile.model_validate(session.get("guitar_profile"))
+    except ValidationError as exc:
+        raise GuitarProfileInvalid("Create or update your guitar profile.") from exc
+
+
+@pages.route("/", methods=['GET'])
 def home():
     return render_template("home.html")
 
-@app.route("/search", methods=['GET', 'POST'])
+@pages.route("/search", methods=['GET', 'POST'])
 def search():
 
     params = {
@@ -30,89 +32,65 @@ def search():
         "recent_activity": True,
         "result_type": "last_listened_songs",
         "eva_songs": [],
-        "profile_submitted": session.get("profile_submitted")
+        "profile_submitted": session.get("profile_submitted"),
+        "error_message": None
         }
     
     if request.method == 'POST':
         start_time = time.time()
 
-        username = request.form["username"].strip()
-        count = request.form["count"]
-        result_type = request.form["result_type"]
-        time_range = request.form["time_range"]
-        all_tracks = []
-        raw_songs = []
+        username = request.form.get("username", "").strip()
+        result_type = request.form.get("result_type", "last_listened_songs")
+        time_range = request.form.get("time_range", "month")
+        params["result_type"] = result_type
+        try:
+            count = int(request.form.get("count", "25"))
+        except ValueError:
+            count = 0
+        if not username or not 1 <= count <= 100 or result_type not in {"last_listened_songs", "top_songs"} or time_range not in {"week", "month", "year", "all_time"}:
+            params["error_message"] = "Enter a username, a track count from 1 to 100, and a valid listening selection."
+            return render_template("search.html", params=params), 400
 
         try: 
-            if session.get("profile_submitted") is None:
-                raise GuitarProfileInvalid
+            user_profile = read_guitar_profile()
 
-            if result_type == "last_listened_songs":
-                raw_songs = get_latest_songs(username, count=count)
-
-                for raw_song in raw_songs:
-                    metadata = raw_song["track_metadata"]
-                    
-                    all_tracks.append(Song(
-                        rec_mbid=metadata["mbid_mapping"]["recording_mbid"] if ("mbid_mapping" in metadata and 
-                                                                                "recording_mbid" in metadata["mbid_mapping"]) else None,
-                        artist_name=metadata["artist_name"],
-                        song_name=metadata["track_name"]
-                        )
-                    )
-
-            else:
-                raw_songs = get_top_songs(username, count=count, time_range=time_range)
-                params["result_type"] = "top_songs"
-
-                for raw_song in raw_songs:
-                    all_tracks.append(Song(
-                        rec_mbid=raw_song["recording_mbid"] if "recording_mbid" in raw_song.keys() else None,
-                        artist_name=raw_song["artist_name"],
-                        song_name=raw_song["track_name"]
-                        )
-                    )
-
-            if not raw_songs: params["recent_activity"] = False # no recent activity found for user
-            
-            needs_analysis = [s for s in all_tracks if db.load_track(s) is None] # make it a set so the same song doesnt get analysed twice
-            unique_needs_analysis = []
-            for s in needs_analysis:
-                if s in unique_needs_analysis: continue
-                unique_needs_analysis.append(s)
-
-            needs_analysis = unique_needs_analysis
-            
-            if needs_analysis:
-                analyize_songs(needs_analysis)
-                db.save_tracks(needs_analysis)
-
-            params["eva_songs"] = db.load_tracks([s for s in all_tracks])
-
-            evaluate_match(songs=params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
+            params["eva_songs"] = search_service.search_songs(
+                username, count, result_type, time_range, user_profile
+            )
+            if not params["eva_songs"]:
+                params["recent_activity"] = False
 
             session["last_searched_ids"] = [track.id for track in params["eva_songs"]]
 
             end_time = time.time()
             print(f"Total time elapsed: {end_time - start_time:.2f} seconds")
 
-        except LBUserNotFound:
+        except LBUserNotFound as exc:
             params["user_found"] = False
-            params["recent_activity"] = False
-        except LBUnavailable:
-            params["recent_activity"] = False
+            params["error_message"] = str(exc)
+        except (LBUnavailable, AnalysisUnavailable, InvalidAnalysisResponse) as exc:
+            # log the category, not provider bodies that may contain sensitive content.
+            current_app.logger.warning("Search failed: %s", type(exc).__name__)
+            params["eva_songs"] = []
+            params["error_message"] = str(exc)
         except NoUserActivity:
             params["recent_activity"] = False
+            session["last_searched_ids"] = []
         except GuitarProfileInvalid:
             params["profile_submitted"] = False
+            params["error_message"] = "Create or update your guitar profile before searching."
 
-    if session.get("last_searched_ids") is not None:
-        params["eva_songs"] = db.load_tracks_with_id(session["last_searched_ids"])
-        evaluate_match(params["eva_songs"], user=GuitarProfile.model_validate(session["guitar_profile"]))
+    if request.method == "GET" and session.get("last_searched_ids"):
+        try:
+            user_profile = read_guitar_profile()
+            params["eva_songs"] = db.load_tracks_with_id(session["last_searched_ids"])
+            evaluate_match(params["eva_songs"], user=user_profile)
+        except GuitarProfileInvalid:
+            params["error_message"] = "Create or update your guitar profile to restore your results."
 
     return render_template("search.html", params=params)
 
-@app.route("/guitar-profile", methods=["GET", "POST"])
+@pages.route("/guitar-profile", methods=["GET", "POST"])
 def profile(): 
     
 
@@ -140,7 +118,7 @@ def profile():
 
     return render_template("profile.html", params=params)
 
-@app.route("/tracks/<int:track_id>/toggle-save", methods=["POST"])
+@pages.route("/tracks/<int:track_id>/toggle-save", methods=["POST"])
 def toggle_saved_track(track_id: int):
     saved_tracks = session.get("saved_tracks", [])
 
@@ -154,9 +132,9 @@ def toggle_saved_track(track_id: int):
     if request.accept_mimetypes.best == "application/json":
         return jsonify(saved=track_id in saved_tracks)
 
-    return redirect(url_for("search"), code=303)
+    return redirect(url_for("pages.search"), code=303)
 
-@app.route("/saved-tracks")
+@pages.route("/saved-tracks")
 def saved_tracks():
     saved_tracks_id = session.get("saved_tracks", [])
     if saved_tracks_id and session.get("guitar_profile"):
