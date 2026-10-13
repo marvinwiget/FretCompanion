@@ -1,99 +1,15 @@
-from sqlalchemy import String, create_engine, select, JSON, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from flask import current_app
+from sqlalchemy import create_engine
 
-from .model import Base, Track
-from app.schemas.song import Song
+from .model import Base
 
-### tracks saved in db should only store info about the song, exclduding personal match calculation
 
-memory_engine_url = "sqlite+pysqlite:///:memory:"
-local_engine_url = "sqlite+pysqlite:///fret_companion.db"
+def init_db(app):
+    """Create one engine per application and initialize missing tables."""
+    engine = create_engine(app.config["DATABASE_URL"], echo=False)
+    Base.metadata.create_all(engine)
+    app.extensions["database_engine"] = engine
 
-engine = create_engine(local_engine_url, echo=False)
 
-Base.metadata.create_all(engine)
-
-def get_track(session: Session, song: Song):
-    existing_track = None
-    # check if mbid exists
-    if song.rec_mbid is not None:
-        existing_track = session.scalar(
-            select(Track).where(
-                Track.rec_mbid == song.rec_mbid
-            )
-        )
-    if existing_track is not None: return existing_track
-
-    # check if track and artist name in db
-    existing_track = session.scalar(
-        select(Track).where(
-            func.lower(func.trim(Track.track_name)) == song.song_name.strip().lower(),
-            func.lower(func.trim(Track.artist_name)) == song.artist_name.strip().lower()
-        )
-    )
-    return existing_track
-
-def save_tracks(songs: list[Song]):
-
-    with Session(engine) as session:
-        for song in songs:
-            if get_track(session=session, song=song): continue # already exists in db
-
-            analysis_data = (
-                    song.analysis.model_dump(mode="json")
-                    if song.analysis is not None
-                    else None
-                )
-
-            track = Track(rec_mbid=song.rec_mbid, 
-                        artist_name=song.artist_name,
-                        track_name=song.song_name,
-                        analysis=analysis_data
-                        )
-            session.add(track)
-        session.commit()
-
-def load_track(song: Song) -> Song | None:
-    with Session(engine) as session:
-        track = get_track(session, song)
-
-        if not track: return None # track not in db
-
-        return Song.model_validate({
-            "id": track.id,
-            "rec_mbid": track.rec_mbid,
-            "artist_name": track.artist_name,
-            "song_name": track.track_name,
-            "match": None,
-            "analysis": track.analysis
-        })
-
-def load_tracks(songs: list[Song]) -> list[Song] | None:
-    with Session(engine) as session:
-
-        tracks = [get_track(session=session, song=song) for song in songs]
-        
-        if None in tracks: return None # at least 1 song not in db
-
-        return [Song.model_validate({
-            "id": track.id,
-            "rec_mbid": track.rec_mbid,
-            "artist_name": track.artist_name,
-            "song_name": track.track_name,
-            "match": None,
-            "analysis": track.analysis
-        }) for track in tracks]
-
-def load_tracks_with_id(track_ids: list[int]) -> list[Song]:
-    with Session(engine) as session:
-
-        tracks = [session.get(Track, id) for id in track_ids]
-
-        return [Song.model_validate({
-            "id": track.id,
-            "rec_mbid": track.rec_mbid,
-            "artist_name": track.artist_name,
-            "song_name": track.track_name,
-            "match": None,
-            "analysis": track.analysis
-        }) for track in tracks]
+def get_engine():
+    return current_app.extensions["database_engine"]
