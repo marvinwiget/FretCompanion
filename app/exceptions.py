@@ -9,3 +9,10 @@ class NoUserActivity(Exception):
 
 class GuitarProfileInvalid(Exception):
     """The user's guitar profile is not valid."""
+
+class AnalysisUnavailable(Exception):
+    """The AI provider could not complete an analysis request."""
+
+
+class InvalidAnalysisResponse(Exception):
+    """The AI response does not contain a complete, valid analysis batch."""
