@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#18221f">
+    <meta name="theme-color" content="#f3f5f1">
+    <meta name="description" content="Find songs from your ListenBrainz listening history that fit your guitar skills. Build your profile, explore matches and save your next song.">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
     <title>{% block title %}Fret Companion{% endblock %}</title>
     {% block styles %}{% endblock %}
     {% block scripts %}{% endblock %}
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="header">
         <a class="brand" href="{{ url_for('pages.home') }}">Fret Companion</a>
         <nav class="navbar" aria-label="Main navigation">
@@ -17,8 +20,12 @@
             {% endfor %}
         </nav>
     </header>
-    <main>
+    <main id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
+    <footer class="site-footer">
+        <span>Fret Companion · Your music, in your hands.</span>
+        <a href="{{ url_for('pages.profile') }}">Update your guitar profile</a>
+    </footer>
 </body>
 </html>

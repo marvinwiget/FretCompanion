@@ -1,11 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Fret Companion | Find your next song to play{% endblock %}
+{% block title %}Saved tracks | Fret Companion{% endblock %}
 {% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>{% endblock %}
 
 {% block content %}
+        <section class="intro" aria-labelledby="page-title">
+            <h1 id="page-title">Your repertoire</h1>
+            <p>The songs you want to come back to. Pick one up whenever you're ready.</p>
+        </section>
         {% if not saved_tracks %}
-        <p class="message info" role="status">No tracks have been saved.</p>
+        <section class="empty-state" aria-labelledby="empty-title">
+            <h2 id="empty-title">Make room for your next song.</h2>
+            <p>No tracks have been saved. Find a song in your listening history and select Save to keep it here.</p>
+            <a class="button" href="{{ url_for('pages.search') }}">Find songs</a>
+        </section>
         {% else %}
         <div class="results-toolbar">
             <h2 class="results-heading">Your saved tracks <span class="results-count">({{ saved_tracks|length }} tracks)</span></h2>

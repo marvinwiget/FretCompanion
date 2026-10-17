@@ -1,26 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Fret Companion | Find your next song to play{% endblock %}
+{% block title %}Fret Companion | Your music, on guitar{% endblock %}
 {% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">{% endblock %}
-
 {% block content %}
-        <section class="hero">
-            <div>
-                <p class="eyebrow">Your listening, your next guitar song</p>
-                <h1>Always have a song ready to play.</h1>
-                <p class="hero-copy">Find guitar songs from music you already listen to. Fret Companion compares each track with your playing experience, chords, techniques, and tuning preferences.</p>
-                <div class="actions">
-                    <a class="button" href="/guitar-profile">Set up your guitar profile</a>
-                    <a class="button secondary" href="/search">Find songs</a>
-                </div>
-            </div>
-            <aside class="steps-card" aria-labelledby="how-title">
-                <h2 id="how-title">How it works</h2>
-                <ol class="steps">
-                    <li><span><strong>Tell us how you play</strong>Choose your level, familiar chords, techniques, and tuning.</span></li>
-                    <li><span><strong>Connect your listening</strong>Enter your ListenBrainz username to find music from your own history.</span></li>
-                    <li><span><strong>Pick your next challenge</strong>See track difficulty and how well it fits your current skills.</span></li>
-                </ol>
-                <p class="note">A lower match can still be a great long-term goal. Use the score as a guide, not a limit.</p>
-            </aside>
-        </section>
+<section class="hero" aria-labelledby="home-title">
+    <h1 id="home-title">Your music.<br>On guitar.</h1>
+    <div class="hero-description">
+        <p class="hero-copy">Find songs you already listen to that fit the way you play.</p>
+        <p>Start with your ListenBrainz history. Fret Companion compares each song’s guitar requirements with your chords, techniques and tuning.</p>
+        <div class="actions">
+            <a class="button" href="{{ url_for('pages.profile') }}">Set up your guitar profile <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href="{{ url_for('pages.search') }}">Already set up? Find songs</a>
+        </div>
+    </div>
+</section>
+<section class="how-section" aria-labelledby="how-title">
+    <div>
+        <h2 id="how-title">From listening<br>to learning.</h2>
+        <p class="note">A lower match can still be a great long-term goal. Use the score as a guide, not a limit.</p>
+    </div>
+    <ol class="steps">
+        <li><strong>Tell us how you play</strong><p>Choose your level, familiar chords, techniques and tuning.</p></li>
+        <li><strong>Bring your listening history</strong><p>Enter your ListenBrainz username and explore recent listens or top tracks.</p></li>
+        <li><strong>Choose your next song</strong><p>Compare guitar matches, save a track and find tabs when you’re ready to play.</p></li>
+    </ol>
+</section>
 {% endblock %}
