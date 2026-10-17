@@ -1,11 +1,8 @@
 /* Search page styles. Shared defaults are in base.css. */
-
 @import url("base.css");
-
 /* Main page layout */
-
 main {
-    width: min(940px, calc(100% - 2rem));
+    width: min(1040px, calc(100% - 2rem));
     margin: 2.7rem auto 5rem;
 }
 
@@ -34,7 +31,6 @@ main {
 }
 
 /* Search form */
-
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -57,7 +53,7 @@ input[type="text"], input[type="number"], select {
 }
 
 input:focus-visible, select:focus-visible {
-    outline: 3px solid #a6c4b3;
+    outline: 3px solid var(--green);
     outline-offset: 2px;
 }
 
@@ -75,7 +71,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Page actions */
-
 .actions {
     display: flex;
     justify-content: flex-end;
@@ -93,7 +88,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Feedback messages */
-
 .message {
     margin: 1rem 0 0;
     padding: 0.75rem 0.9rem;
@@ -113,7 +107,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Song results */
-
 .results-heading {
     margin: 2.1rem 0 1rem;
     font-size: 1.45rem;
@@ -122,16 +115,15 @@ input:focus-visible, select:focus-visible {
 
 .song-list {
     display: grid;
-    gap: 0.9rem;
+    gap: 1.5rem;
 }
 
 .song-card {
     min-width: 0;
-    padding: 1.15rem clamp(1rem, 3vw, 1.5rem);
-    border: 1px solid var(--line);
-    border-radius: 14px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 0;
+    border-radius: 8px;
     background: var(--surface);
-    box-shadow: 0 4px 16px rgb(32 42 38 / 3%);
 }
 
 .song-top {
@@ -143,7 +135,8 @@ input:focus-visible, select:focus-visible {
 
 .song-title {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
     line-height: 1.3;
 }
 
@@ -155,11 +148,11 @@ input:focus-visible, select:focus-visible {
 .match {
     flex: none;
     padding: 0.35rem 0.65rem;
-    border: 1px solid #c9ded0;
-    border-radius: 999px;
+    border: 0;
+    border-radius: 4px;
     background: var(--green-soft);
     color: var(--green);
-    font-size: 0.85rem;
+    font-size: 1.125rem;
     font-weight: 750;
 }
 
@@ -169,7 +162,7 @@ input:focus-visible, select:focus-visible {
     gap: 0.7rem 1.3rem;
     margin: 1rem 0 0;
     padding-top: 0.9rem;
-    border-top: 1px solid var(--line);
+    border-top: 0;
 }
 
 .song-details div {
@@ -178,10 +171,9 @@ input:focus-visible, select:focus-visible {
 
 .song-details dt {
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.875rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0;
 }
 
 .song-details dd {
@@ -194,31 +186,14 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Adjust the layout for smaller screens. */
-
 @media (max-width: 620px) {
     .form-grid {
         grid-template-columns: 1fr;
     }
+
 }
 
 @media (max-width: 460px) {
-    .header {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding-block: 0.85rem;
-    }
-
-    .navbar {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .navbar a {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-    }
-
     .song-top {
         flex-direction: column;
     }
@@ -234,6 +209,7 @@ input:focus-visible, select:focus-visible {
     .actions .button {
         width: 100%;
     }
+
 }
 
 .spaced-field {
@@ -241,7 +217,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Result count and sorting controls */
-
 .results-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -271,7 +246,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* Sort toggle: the text and colour both show whether sorting is on. */
-
 .sort-button {
     display: inline-flex;
     align-items: center;
@@ -302,9 +276,9 @@ input:focus-visible, select:focus-visible {
     font-size: 0.8rem;
 }
 
-/* Track details use native disclosure controls; no JavaScript needed. */
-
-.track-overview, .analysis-note, .save-note {
+/* Track details use native disclosure controls;
+no JavaScript needed. */
+.track-overview, .analysis-note {
     color: var(--muted);
     font-size: 0.9rem;
 }
@@ -319,7 +293,7 @@ input:focus-visible, select:focus-visible {
 }
 
 .track-disclosure summary:focus-visible {
-    outline: 3px solid #a6c4b3;
+    outline: 3px solid var(--green);
     outline-offset: 3px;
     border-radius: 4px;
 }
@@ -349,7 +323,6 @@ input:focus-visible, select:focus-visible {
 }
 
 /* External tab search, kept separate from the song's save action. */
-
 .track-footer {
     display: flex;
     flex-wrap: wrap;
@@ -376,17 +349,16 @@ input:focus-visible, select:focus-visible {
     gap: 0.65rem;
     min-height: 48px;
     padding: 0.6rem 0.8rem;
-    border: 1px solid #d9ac38;
+    border: 0;
     border-radius: 10px;
-    background: #fff4cc;
-    color: #302816;
+    background: var(--green-soft);
+    color: var(--green);
     text-decoration: none;
     font-weight: 700;
 }
 
 .ug-link:hover {
-    background: #ffe69b;
-    border-color: #9c7315;
+    background: #d6e5da;
 }
 
 .ug-link:focus-visible {
@@ -394,25 +366,49 @@ input:focus-visible, select:focus-visible {
     outline-offset: 3px;
 }
 
-.ug-badge {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 7px;
-    background: #302816;
-    color: #ffda65;
-    font-size: 0.8rem;
-    letter-spacing: -0.04em;
-}
-
 .ug-label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     font-weight: 400;
 }
 
 .song-top > div:first-child {
     min-width: 0;
     overflow-wrap: anywhere;
+}
+
+.empty-state {
+    padding: clamp(2rem, 6vw, 4rem);
+    background: var(--green-soft);
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.empty-state h2 {
+    margin-top: 0;
+    font-family: var(--display-font);
+    font-size: 2rem;
+    font-weight: 400;
+}
+
+.empty-state p {
+    max-width: 42ch;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state .button {
+    display: inline-flex;
+    text-decoration: none;
+}
+
+#search-progress {
+    border: 0;
+    border-left: 4px solid var(--green);
+}
+
+@media (min-width: 760px) {
+    .song-card > .song-details {
+        grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr;
+    }
+
 }

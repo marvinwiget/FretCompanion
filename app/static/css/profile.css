@@ -25,12 +25,12 @@ main {
 
 .profile-form {
     display: grid;
-    gap: 1.1rem;
+    gap: 1.75rem;
 }
 
 .section {
     min-width: 0;
-    padding: clamp(1.1rem, 3vw, 1.6rem);
+    padding: clamp(1.25rem, 3vw, 2rem);
 }
 
 .section legend {
@@ -104,7 +104,8 @@ main {
 .technique-choice input:checked + span::before {
     border-color: var(--green);
     background: var(--green);
-    box-shadow: inset 0 0 0 3px white;
+    outline: 2px solid white;
+    outline-offset: -4px;
 }
 
 /* Chord picker */
@@ -141,7 +142,7 @@ main {
     padding: 0.35rem 0.55rem;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fffefa;
+    background: var(--surface);
     font-weight: 650;
 }
 
@@ -152,7 +153,7 @@ main {
 }
 
 .chord-choice input:focus-visible + span, .select-all input:focus-visible + span {
-    outline: 3px solid #a6c4b3;
+    outline: 3px solid var(--green);
     outline-offset: 2px;
 }
 
@@ -163,7 +164,7 @@ main {
     cursor: pointer;
     color: var(--ink);
     font-size: 0.82rem;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .select-all span {
@@ -232,22 +233,8 @@ select {
 }
 
 @media (max-width: 420px) {
-    .header {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding-block: 0.85rem;
-    }
 
-    .navbar {
-        width: 100%;
-        justify-content: space-between;
-    }
 
-    .navbar a {
-        padding-inline: 0.55rem;
-        font-size: 0.9rem;
-    }
 
     .choice-grid {
         grid-template-columns: 1fr;
@@ -291,9 +278,9 @@ select {
 }
 
 .chord-group {
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: white;
+    border: 0;
+    border-radius: 6px;
+    background: var(--paper);
 }
 
 .chord-group summary {
@@ -335,7 +322,7 @@ select {
 }
 
 summary:focus-visible, select:focus-visible {
-    outline: 3px solid var(--copper);
+    outline: 3px solid var(--green);
     outline-offset: 3px;
 }
 
@@ -389,7 +376,7 @@ summary:focus-visible, select:focus-visible {
 }
 
 .selected-chord:focus-visible, .accidental-toggle input:focus-visible {
-    outline: 3px solid var(--copper);
+    outline: 3px solid var(--green);
     outline-offset: 3px;
 }
 
